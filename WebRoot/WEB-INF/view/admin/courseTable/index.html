@@ -1,0 +1,538 @@
+#@innerLayout()
+#define main()
+<div id="toolbar">
+	<div class="form-inline" role="form">
+		 <button data-toggle='tooltip' id='transferBtn' class='btn btn-primary btn-md' title='切换'><i class='glyphicon glyphicon-retweet'></i></button>
+		  <div class="form-group">
+           	<input placeholder="请输入周数" id="realWeekCount" style="width:100px;" name="realWeekCount" type="text" onchange="refreshThisTable()" class="form-control" />	
+          </div>
+           <div class="form-group">
+           		<select class="form-control" id="weekCount" name="weekCount" onchange="refreshThisTable()">
+           			<option value="">周数</option>
+           			#for(weekCount : weekCounts)
+						<option value="#(for.index+1)">#(weekCount)</option>
+					#end
+           		</select>
+           </div>
+           <div class="form-group">
+           		<select class="form-control" id="week" name="week" onchange="refreshThisTable()">
+           			<option value="">星期</option>
+           			#for(week : weeks)
+						<option value="#(week)">#(week)</option>
+					#end
+           		</select>
+           </div>
+           <div class="form-group">
+           		<select class="form-control" id="courseTime" name="courseTime" onchange="refreshThisTable()">
+           			<option value="">上课时间</option>
+           			#for(courseTime : courseTimes)
+						<option value="#(courseTime.time)">#(courseTime.time)</option>
+					#end
+           		</select>
+           </div>
+           <div class="form-group">
+           		<select class="form-control" id="course" name="course" onchange="refreshThisTable()">
+           			<option value="">课程</option>
+           			#for(course : courses)
+						<option value="#(course.name)">#(course.name)</option>
+					#end
+           		</select>
+           </div>
+           <div class="form-group">
+           		<select class="form-control" id="allowFixed" name="allowFixed" onchange="refreshThisTable()">
+           			<option value="">是否可固定</option>
+           			<option value="true">允许固定</option>
+           			<option value="false">禁止固定</option>
+           		</select>
+           </div>
+           <div class="form-group">
+           		<select class="form-control" id="enable" name="enable" onchange="refreshThisTable()">
+           			<option value="">是否可预约</option>
+           			<option value="true">允许预约</option>
+           			<option value="false">禁止预约</option>
+           		</select>
+           </div>
+           <button id="searchBtn" class="btn btn-primary btn-md">查询</button>
+          </div>
+      </div>
+<table id="table"
+	data-toolbar="#toolbar"
+           	data-show-refresh="true"
+            	data-show-toggle="false"
+           	data-show-columns="true"
+            	data-query-params="queryParams"></table>
+#end
+#define js()
+<script type="text/javascript">
+	var table = $('#table');
+	window.enableEvents = {
+		'click button ':function(e, value, row, index){
+			layer.confirm('确认'+(value?"禁止":"允许")+'预约本节课?', {icon: 3, title:'请确认'}, function(index){
+				var loadIndex = layer.load();
+				$.ajax({
+					type: "get",
+					dataType: "json",
+					url: "admin/courseTable/toggleEnable/"+row.id,
+					success: function(ret){
+						if(ret.isOk){
+							layer.close(loadIndex);
+							layer.msg('操作成功！', {icon: 1, time:1000});
+							row['enable'] = !row['enable'];
+							table.bootstrapTable('updateRow', {
+								index: index,
+								row: row
+							});
+							refreshThisTable();
+						}
+					}
+				
+				})
+			});
+		}
+	};
+	
+	window.allowFixedEvents = {
+			'click button ':function(e, value, row, index){
+				layer.confirm('确认'+(value?"禁止":"允许")+'固定预约?', {icon: 3, title:'请确认'}, function(index){
+					var loadIndex = layer.load();
+					$.ajax({
+						type: "get",
+						dataType: "json",
+						url: "admin/courseTable/toggleAllowFixed/"+row.id,
+						success: function(ret){
+							if(ret.isOk){
+								layer.close(loadIndex);
+								layer.msg('操作成功！', {icon: 1, time:1000});
+								row['allowFixed'] = !row['allowFixed'];
+								table.bootstrapTable('updateRow', {
+									index: index,
+									row: row
+								});
+								refreshThisTable();
+							}
+						}
+					
+					})
+				});
+			}
+		};
+	
+	window.operateEvents = {
+		'click .edit':function(e, value, row, index){
+			edit(row.id);
+		},
+		'click .remove':function(e, value, row, index){
+			layer.confirm('确认删除?', {icon: 3, title:'请确认'}, function(index){
+				var loadIndex = layer.load();
+				$.ajax({
+					type: "get",
+					dataType: "json",
+					url: "admin/courseTable/delete/"+row.id,
+					success: function(ret){
+						layer.close(loadIndex);
+						if(ret.isOk){
+							layer.msg('删除成功！', {icon: 1, time:1000});
+							table.bootstrapTable('remove', {
+								field: 'id',
+								values: [row.id]
+							});
+							refreshThisTable();
+						}
+					}
+				
+				})
+			});
+		}
+	};
+	
+	window.moreEvents = {
+		'click .add':function(e, value, row, index){
+			//alert(row.id);
+			reserveCourse(row.id);
+		},
+		'click .more':function(e, value, row, index){
+			//alert(row.week);
+			layer.open({
+			  type:2,
+			  title: '约课情况',
+			  maxmin: true,
+			  area:['1024px','620px'],
+			  content: 'admin/reserveCourse/condition?week='+row.week+'&weekCount='+row.weekCount+'&courseTime='+row.courseTime+'&course='+row.course+'&status='+row.status,
+			});
+		},
+	
+	};
+	
+	function refreshThisTable(){
+		table.bootstrapTable('refresh');
+	}
+	
+	$("#searchBtn").on("click", function(){
+		refreshThisTable();
+	});
+	
+	function queryParams(params) {
+        $('#toolbar').find('input,select').each(function () {
+            params[$(this).attr('name')] = $(this).val();
+        });
+        return params;
+    }
+	
+	table.bootstrapTable({
+		pagination: true,
+		striped: true,
+		sidePagination: "server",
+		url: "admin/courseTable/list",
+		height:550,
+		pageNumber : 1,
+		pageSize: 10,
+		pageList:[5, 10, 15, 20, 30, 50],
+	    columns: [{
+	        field: 'index',
+	        title: '编号',
+               align: 'center'	,
+               formatter: indexFormatter
+	    },{
+	        field: 'weekCount',
+	        title: '周数',
+               align: 'center'
+	    },{
+	        field: 'week',
+	        title: '星期',
+               align: 'center'
+	    }, {
+	        field: 'date',
+	        title: '上课日期',
+               align: 'center'
+	    },{
+	        field: 'courseTime',
+	        title: '课程时间',
+               align: 'center',
+               visible: false
+	    },{
+	        field: 'course',
+	        title: '课程',
+               align: 'center',
+               formatter: courseFormatter
+	    },{
+	        field: 'teacher1',
+	        title: '主教',
+               align: 'center'
+	    },{
+	        field: 'teacher2',
+	        title: '助教',
+               align: 'center'
+	    }, {
+	        field: 'minAge',
+	        title: '最小年龄',
+               align: 'center',
+               visible: false,
+               formatter: ageFormatter
+	    }, {
+	        field: 'maxAge',
+	        title: '最大年龄',
+               align: 'center',
+               visible: false,
+               formatter: ageFormatter
+	    }, {
+	        field: 'fixedNum',
+	        title: '固定人数',
+               align: 'center'
+	    }, {
+	        field: 'maxFixedNum',
+	        title: '最大固定人数',
+               align: 'center'
+	    },{
+	        field: 'stuNumber',
+	        title: '学生人数',
+               align: 'center',
+               editable: {
+            	   type: "text",
+            	   placeholder: "请输入已经预约的课程人数！",
+            	   validate:function(v){
+            		   if($.trim(v) =='' || isNaN(v) || $.trim(v)<0) return "课程人数不能为空且必须为数字";
+            	   }
+               }
+	    },{
+	        field: 'maxNumber',
+	        title: '最大人数',
+               align: 'center'
+	    },{
+	        field: 'status',
+	        title: '状态',
+               align: 'center' 
+	    },{
+	        field: 'allowFixed',
+	        title: '固定',
+               align: 'center',
+               events: allowFixedEvents,
+               formatter: allowFixedFormatter
+	    },{
+	        field: 'enable',
+	        title: '启用',
+               align: 'center',
+               events: enableEvents,
+               formatter: enableFormatter
+	    },{ 
+            field: 'more',
+            title: '约课',
+            align: 'center',
+            events: moreEvents,
+            formatter: moreFormatter
+        },{ 
+            field: 'operate',
+            title: '操作',
+            align: 'center',
+            events: operateEvents,
+            formatter: operateFormatter,
+            visible: false
+           }],
+           onResetView: function(){
+        	   $("[data-toggle='tooltip']").tooltip();
+        	   $("#addBtn").parent().find("[title]").tooltip();
+           },
+           onEditableSave: function(field, row, oldValue, el){
+        	   table.bootstrapTable('resetView');
+        	   var loadIndex = layer.load();
+        	   var courseTable = {
+        			   "courseTable.id": row.id,
+        			   "courseTable.stuNumber": row.stuNumber,
+        			   "courseTable.maxNumber": row.maxNumber,
+        			   "courseTable.week": row.week
+        	   };
+        	   $.ajax({
+					type: "post",
+					dataType: "json",
+					url: "admin/courseTable/save",
+					data: courseTable,
+					success: function(ret){
+						layer.close(loadIndex);
+						if(ret.isOk){
+							layer.msg('更新成功！', {icon: 1, time:1000});
+						}else{
+							layer.msg('更新失败！', {icon: 5, time:1000});
+						}
+					}
+				
+				})
+           }
+	});
+	
+	function allowFixedFormatter(value, row, index) {
+		var btn;
+		if(value){
+			btn = '<button data-toggle="tooltip" class="btn btn-success btn-xs" data-placement="left" title="点击禁用固定预约"><span  class="glyphicon glyphicon-eye-close "></span></button>';
+		}else{
+			btn = '<button data-toggle="tooltip" class="btn btn-danger btn-xs" data-placement="left" title="点击允许固定预约"><span  class="glyphicon glyphicon-eye-open "></span></button>';
+		}
+        return [btn].join('');
+    }
+	
+	function enableFormatter(value, row, index) {
+		var btn;
+		if(value){
+			btn = '<button data-toggle="tooltip" class="btn btn-success btn-xs" data-placement="left" title="点击禁用预约本节课"><span  class="glyphicon glyphicon-eye-close "></span></button>';
+		}else{
+			btn = '<button data-toggle="tooltip" class="btn btn-danger btn-xs" data-placement="left" title="点击允许预约本节课"><span  class="glyphicon glyphicon-eye-open "></span></button>';
+		}
+        return [btn].join('');
+    }
+	
+	function courseFormatter(value, row, index){
+		return [value.replace("全脑开发课-","")].join('');
+	}
+	
+	function ageFormatter(value, row, index){
+		var year = '岁';
+		var month = '个月';
+		var age = '';
+		if(value<12){
+			age = value+month;
+		}else if(value%12!=0){
+			age = Math.floor(value/12)+year+(value%12)+month;
+		}else{
+			age = Math.floor(value/12)+year;
+		}
+		return [age].join('');
+	}
+	
+	function indexFormatter(value, row, index) {
+		var pageNumber = table.bootstrapTable('getOptions').pageNumber;  
+        var pageSize = table.bootstrapTable('getOptions').pageSize;  
+        return [(pageNumber-1) * pageSize+index+1].join('');
+    }
+	
+	function moreFormatter(value, row, index) {
+        return [
+        	'<button data-toggle="tooltip" class="btn btn-default btn-xs add" title="约课">',
+            '<i class="glyphicon glyphicon-plus"></i>',
+            '</button>  ',
+            '<button data-toggle="tooltip" class="btn btn-info btn-xs more" title="点击查看约课情况">',
+            '<span  class="glyphicon glyphicon-new-window"></span>',
+            '</button>',
+        ].join('');
+    }
+	
+	function operateFormatter(value, row, index) {
+        return [
+            '<button data-toggle="tooltip" class="btn btn-success btn-xs edit" title="编辑">',
+            '<i class="glyphicon glyphicon-pencil"></i>',
+            '</button>  ',
+            '<button data-toggle="tooltip" class="btn btn-danger btn-xs remove" title="删除">',
+            '<i class="glyphicon glyphicon-remove"></i>',
+            '</button>'
+        ].join('');
+    }
+	
+	setTimeout(function(){
+		table.bootstrapTable('resetView');
+	}, 100);
+	
+	$(".columns.columns-right.btn-group.pull-right").prepend("<button data-toggle='tooltip' id='addBtn' class='btn btn-primary btn-md' title='新增'><i class='glyphicon glyphicon-plus'></i></button>");
+	$(".form-inline").append("<button data-toggle='tooltip' id='resetBtn' class='btn btn-info btn-md'>显示全部</button>");
+	$(".form-inline").append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+	$(".form-inline").append("<button data-toggle='tooltip' id='copyBtn' class='btn btn-info btn-md'>复制课表</button>");
+	$(".form-inline").append("<input placeholder='源周数' data-rule='required;digits;' id='inWeekCount' style='width: 80px;' name='inWeekCount' class='form-control' type='text'/>");
+	$(".form-inline").append("&nbsp;");
+	$(".form-inline").append("<input placeholder='目标周数' data-rule='required;digits;' id='outWeekCount' style='width: 85px;' name='outWeekCount' class='form-control' type='text'/>");
+	$(".form-inline").append("&nbsp;");
+	$(".form-inline").append("<button data-toggle='tooltip' id='confirmCopyBtn' class='btn btn-success btn-md'>确认复制</button>");
+	$(".form-inline").append("&nbsp;");
+	$(".form-inline").append("<button data-toggle='tooltip' id='cancelCopyBtn' class='btn btn-danger btn-md'>取消</button>");
+	
+	function reserveCourse(id){
+		layer.open({
+			  type:2,
+			  title: '添加学生到本节课',
+			  maxmin: false,
+			  area:['768px','650px'],
+			  btn:['确定','取消'],
+			  content: 'admin/courseTable/courseDetailAdmin/'+id,
+			  yes: function(index, layero){
+				  var iframeName = layero.find("iframe")[0]['name'];
+				  var iframeWindow = window[iframeName];
+				  iframeWindow.submitThisForm();
+			  }
+		});
+	}
+	
+	function edit(id){
+		layer.open({
+			  type:2,
+			  title: (id==null || id<=0)?'新增':'修改',
+			  maxmin: true,
+			  area:['768px','620px'],
+			  btn:['确定','取消'],
+			  content: 'admin/courseTable/edit/'+id,
+			  yes: function(index, layero){
+				  var iframeName = layero.find("iframe")[0]['name'];
+				  var iframeWindow = window[iframeName];
+				  iframeWindow.submitThisForm();
+			  }
+		});
+	}
+	
+	$("#transferBtn").on("click", function(){
+		if($("#realWeekCount").is(':hidden')){
+			$("#realWeekCount").show();
+			$("#weekCount").hide();
+			$("#weekCount").val("");
+		}else{
+			$("#realWeekCount").hide();
+			$("#realWeekCount").val("");
+			$("#weekCount").show();
+		}
+	});
+	
+	$("#addBtn").on("click", function(){
+		edit(0);
+	});
+	
+	$("#resetBtn").on("click", function(){
+		$("#weekCount").val("");
+		$("#week").val("");
+		$("#courseTime").val("");
+		$("#course").val("");
+		$("#enable").val("");
+		$("#allowFixed").val("");
+		refreshThisTable();
+	});
+	
+	$(function(){
+		$("#realWeekCount").hide();
+		$("#inWeekCount").hide();
+		$("#outWeekCount").hide();
+		$("#confirmCopyBtn").hide();
+		$("#cancelCopyBtn").hide();
+	})
+	
+	$("#copyBtn").on("click", function(){
+		$("#copyBtn").hide();
+		$("#inWeekCount").show();
+		$("#outWeekCount").show();
+		$("#confirmCopyBtn").show();
+		$("#cancelCopyBtn").show();
+	});
+	
+	$("#confirmCopyBtn").on("click", function(){
+		var inWeekCount = $("#inWeekCount").val();
+		var outWeekCount = $("#outWeekCount").val();
+		
+		if(inWeekCount=='' || outWeekCount=='' || isNaN(inWeekCount) || isNaN(outWeekCount)){
+			layer.alert('输入不能为空且必须为数字！', {
+			    skin: 'layui-layer-lan'
+			    ,closeBtn: 0
+			    ,anim: 5 //动画类型
+			  });
+			return;
+		}
+		if(inWeekCount >= outWeekCount){
+			layer.alert('源周数必须小于目标周数！', {
+			    skin: 'layui-layer-lan'
+			    ,closeBtn: 0
+			    ,anim: 5 //动画类型
+			  });
+			return;
+		}
+		
+		layer.confirm('确认将第'+inWeekCount+'周课表复制到第'+outWeekCount+'周吗？', {icon: 3, title:'请确认'}, function(index){
+			var loadIndex = layer.load();
+			$.ajax({
+				type: "post",
+				dataType: "json",
+				url: "admin/courseTable/copy/",
+				data: {
+					inWeekCount: inWeekCount,
+					outWeekCount: outWeekCount
+				},
+				success: function(ret){
+					layer.close(loadIndex);
+					if(ret.isOK){
+						layer.alert('您已成功将第'+inWeekCount+'周共'+ret.intimes+'节课复制到第'+outWeekCount+'周，成功复制'+ret.outtimes+'节课', {
+						    skin: 'layui-layer-lan'
+						    ,closeBtn: 0
+						    ,anim: 4 //动画类型
+						  });
+						$("#copyBtn").show();
+						$("#inWeekCount").hide();
+						$("#outWeekCount").hide();
+						$("#confirmCopyBtn").hide();
+						$("#cancelCopyBtn").hide();
+						refreshThisTable();
+					}
+				}
+			
+			})
+		});
+	});
+	
+	$("#cancelCopyBtn").on("click", function(){
+		$("#copyBtn").show();
+		$("#inWeekCount").hide();
+		$("#outWeekCount").hide();
+		$("#confirmCopyBtn").hide();
+		$("#cancelCopyBtn").hide();
+	});
+	
+</script>
+#end

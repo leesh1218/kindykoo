@@ -1,0 +1,440 @@
+#@innerLayout()
+#define main()
+<div id="toolbar">
+	<div class="form-inline" role="form">
+           <div class="form-group">
+           		<input placeholder="关键词查询" style="width: 120px;" id="keywords" name="keywords" type="text" class="form-control" onchange="refreshThisTable()"/>
+           </div>
+           <div class="form-group">
+           		<select class="form-control" id="enable"  name="enable" onchange="refreshThisTable()">
+           			<option value="">是否可以预约课程</option>
+           			<option value="true">可以预约</option>
+           			<option value="false">不能预约</option>
+           		</select>
+           </div>
+            <div class="form-group">
+           		<select class="form-control" id="mainUserFlag"  name="mainUserFlag" onchange="refreshThisTable()">
+           			<option value="">主用户标志</option>
+           			<option value="主用户">主用户</option>
+           			<option value="子用户">子用户</option>
+           		</select>
+           </div>
+            <div class="form-group">
+           		<select class="form-control" id="vipType"  name="vipType" onchange="refreshThisTable()">
+					<option value="">会员卡类型</option>
+					<option  value="半年卡">半年卡</option>
+					<option  value="年卡">年卡</option>
+					<option  value="一年半卡">一年半卡</option>
+					<option  value="两年卡">两年卡</option>
+					<option  value="课时卡">课时卡</option>
+           		</select>
+           </div>
+           <button id="searchBtn" class="btn btn-primary btn-md">查询</button>
+          </div>
+      </div>
+<table id="table"
+	data-toolbar="#toolbar"
+           	data-show-refresh="true"
+            	data-show-toggle="false"
+           	data-show-columns="true"
+            	data-query-params="queryParams"></table>
+#end
+#define js()
+<script type="text/javascript">
+	var table = $('#table');
+	window.enableEvents = {
+		'click button ':function(e, value, row, index){
+			layer.confirm('确认'+(value?"禁止":"允许")+'该会员预约课程?', {icon: 3, title:'请确认'}, function(index){
+				var loadIndex = layer.load();
+				$.ajax({
+					type: "get",
+					dataType: "json",
+					url: "admin/student/toggleEnable/"+row.id,
+					success: function(ret){
+						if(ret.isOk){
+							layer.close(loadIndex);
+							layer.msg('操作成功！', {icon: 1, time:1000});
+							row['enable'] = !row['enable'];
+							table.bootstrapTable('updateRow', {
+								index: index,
+								row: row
+							});
+						}
+					}
+				
+				})
+			});
+		}
+	};
+	window.operateEvents = {
+		'click .edit':function(e, value, row, index){
+			edit(row.id);
+		},
+		'click .remove':function(e, value, row, index){
+			layer.confirm('确认删除?', {icon: 3, title:'请确认'}, function(index){
+				var loadIndex = layer.load();
+				$.ajax({
+					type: "get",
+					dataType: "json",
+					url: "admin/student/delete/"+row.id,
+					success: function(ret){
+						layer.close(loadIndex);
+						if(ret.isOk){
+							layer.msg('删除成功！', {icon: 1, time:1000});
+							table.bootstrapTable('remove', {
+								field: 'id',
+								values: [row.id]
+							});
+							refreshThisTable();
+						}
+					}
+				
+				})
+			});
+		}
+	};
+	window.nameEvents = {
+			'click button ':function(e, value, row, index){
+				//alert(value);
+				layer.open({
+				  type:2,
+				  title: '约课情况',
+				  maxmin: true,
+				  area:['1024px','620px'],
+				  content: 'admin/reserveCourse/condition?keywords='+value+'&status='+'未上课',
+				});
+			}
+		};
+	
+	function refreshThisTable(){
+		table.bootstrapTable('refresh');
+	}
+	
+	$("#searchBtn").on("click", function(){
+		refreshThisTable();
+	});
+	
+	function queryParams(params) {
+        $('#toolbar').find('input,select').each(function () {
+            params[$(this).attr('name')] = $(this).val();
+        });
+        return params;
+    }
+	
+	table.bootstrapTable({
+		pagination: true,
+		striped: true,
+		sidePagination: "server",
+		url: "admin/student/list",
+		height:550,
+		pageList:[5, 10, 15, 20, 30, 50],
+	    columns: [{
+	        field: 'index',
+	        title: '编号',
+               align: 'center'	,
+               formatter: indexFormatter
+	    }, {
+	        field: 'name',
+	        title: '姓名',
+               align: 'center',
+               switchable: true,
+               events: nameEvents,
+               formatter: nameFormatter
+	    },{
+	        field: 'mainUserFlag',
+	        title: '用户类别',
+               align: 'center',
+               visible: false
+	    },{
+	        field: 'mainUserName',
+	        title: '主用户姓名',
+               align: 'center',
+               visible: false
+	    },{
+	        field: 'nickName',
+	        title: '昵称',
+               align: 'center'
+	    },{
+	        field: 'sex',
+	        title: '性别',
+               align: 'center',
+               switchable: false
+	    },{
+	        field: 'age',
+	        title: '年龄',
+               align: 'center',
+               formatter: ageFormatter
+	    },{
+	        field: 'birthday',
+	        title: '生日',
+               align: 'center',
+               visible: false
+	    },{
+	        field: 'contact',
+	        title: '联系人',
+               align: 'center',
+               editable: {
+            	   type: "text",
+            	   placeholder: "请输入姓名！",
+            	   validate:function(v){
+            		   if(!($.trim(v))) return "联系人姓名不能为空"	;
+            	   }
+               }
+	    },{
+	        field: 'relationship',
+	        title: '关系',
+               align: 'center',
+               visible: false,
+           	   editable: {
+               	   type: "select",
+               	   showbuttons: false,
+	                source: [
+	                    {value: "爸爸", text: '爸爸'},
+	                    {value: "妈妈", text: '妈妈'},
+	                    {value: "爷爷", text: '爷爷'},
+	                    {value: "奶奶", text: '奶奶'},
+	                    {value: "姥爷", text: '姥爷'},
+	                    {value: "姥姥", text: '姥姥'},
+	                    {value: "其他", text: '其他'}
+	                ]
+               }
+	    		
+	    },{
+	        field: 'phone',
+	        title: '手机',
+               align: 'center'
+	    },{
+	        field: 'vipType',
+	        title: '会员类型',
+               align: 'center'
+	    },{
+	        field: 'vipCardNo',
+	        title: '会员卡号',
+               align: 'center',
+               visible: false
+	    },{
+	        field: 'beginDate',
+	        title: '开始时间',
+               align: 'center',
+               visible: false,
+               editable: {
+            	   type: "combodate",
+            	   format: "YYYY-MM-DD",
+            	   template: "YYYY / MMM / D",
+            	   combodate: {
+                       minYear: 2010,
+                       maxYear: 2030,
+                       minuteStep: 1,
+                       yearDescending:false
+                  }
+               }
+	    },{
+	        field: 'endDate',
+	        title: '到期时间',
+               align: 'center'
+	    },{
+	        field: 'allAmount',
+	        title: '总费用',
+               align: 'center',
+               visible: false,
+               editable: {
+            	   type: "text",
+            	   placeholder: "请输入总费用！",
+            	   validate:function(v){
+            		   if(!($.trim(v)) || isNaN(v) || v<0 || v>100000) 
+            			   return "总费用不合法";
+            	   }
+               }
+	    },{
+	        field: 'activityCourseCount',
+	        title: '活动消课',
+               align: 'center',
+               visible: false
+	    },{
+	        field: 'useCourseCount',
+	        title: '已上课时数',
+               align: 'center',
+               visible: false
+	    },{
+	        field: 'remainCourseCount',
+	        title: '剩余课数',
+               align: 'center'
+	    },{
+	        field: 'courseCount',
+	        title: '总课时数',
+               align: 'center',
+               visible: false
+	    },{
+	        field: 'vipCourseCount',
+	        title: '合约课数',
+               align: 'center',
+               visible: false
+	    },{
+	        field: 'presentCourseCount',
+	        title: '赠送课数',
+               align: 'center',
+               visible: false
+	    },{
+	        field: 'disableCourseCount',
+	        title: '冻结课时',
+               align: 'center'
+	    },{
+	        field: 'weekReserveCount',
+	        title: '本周约课数',
+               align: 'center'
+	    },{
+	        field: 'weekMaxCount',
+	        title: '周约课上限',
+               align: 'center',
+               formatter: weekMaxCountFormatter,
+               editable: {
+            	   type: "text",
+            	   placeholder: "请输入周最大约课数！",
+            	   validate:function(v){
+            		   if(!($.trim(v)) || isNaN(v) || v<0 || v>99) 
+            			   return "周最大约课数不合法";
+            	   }
+               }
+
+	    },{
+	        field: 'enable',
+	        title: '能否约课',
+               align: 'center',
+               events: enableEvents,
+               formatter: enableFormatter
+	    }, { 
+               field: 'operate',
+               title: '操作',
+               align: 'center',
+               events: operateEvents,
+               formatter: operateFormatter,
+               visible: false
+           }],
+           onResetView: function(){
+        	   $("[data-toggle='tooltip']").tooltip();
+        	   $("#addBtn").parent().find("[title]").tooltip();
+           },
+           onEditableSave: function(field, row, oldValue, el){
+        	   table.bootstrapTable('resetView');
+        	   var loadIndex = layer.load();
+        	   var student = {
+        			   "student.id": row.id,
+        			   "student.contact": row.contact,
+        			   "student.phone": row.phone,
+        			   "student.beginDate": row.beginDate,
+        			   "student.remainCourseCount": row.remainCourseCount,
+        			   "student.disableCourseCount": row.disableCourseCount,
+        			   "student.weekMaxCount": row.weekMaxCount,
+        			   "student.allAmount": row.allAmount,
+        			   "student.relationship": row.relationship
+        	   };
+        	   $.ajax({
+        		   type: "post",
+        		   dataType: "json",
+        		   url: "admin/student/save",
+        		   data: student,
+        		   success: function(ret){
+        			   layer.close(loadIndex);
+        			   refreshThisTable();
+        			   if(ret.isOk){
+        				   layer.msg('更新成功！', {icon: 1, time: 2000});
+        			   }else{
+        				   layer.msg('更新失败！', {icon: 5, time: 2000});
+        			   }
+        		   }
+        	   })
+           }
+	});
+	
+	function nameFormatter(value, row, index){
+		var btn = '<button data-toggle="tooltip" class="btn btn-info btn-xs" data-placement="left" title="点击查看约课情况"><span  class="glyphicon glyphicon-new-window"></span></button>';
+        return [value+' '+btn].join('');
+	}
+	
+	function ageFormatter(value, row, index){
+		var year = '岁';
+		var month = '个月';
+		var age = '';
+		if(value<12){
+			age = value+month;
+		}else if(value%12!=0){
+			age = Math.floor(value/12)+year+(value%12)+month;
+		}else{
+			age = Math.floor(value/12)+year;
+		}
+		return [age].join('');
+	}
+	
+	function weekMaxCountFormatter(value, row, index) {
+		var btn = value;
+		if(value == 99){
+			btn = '无限制';
+		}
+        return [btn].join('');
+    }
+	
+	function enableFormatter(value, row, index) {
+		var btn;
+		if(value){
+			btn = '<button data-toggle="tooltip" class="btn btn-success btn-xs" data-placement="left" title="点击禁止预约课程"><span  class="glyphicon glyphicon-eye-close "></span></button>';
+		}else{
+			btn = '<button data-toggle="tooltip" class="btn btn-danger btn-xs" data-placement="left" title="点击允许预约课程"><span  class="glyphicon glyphicon-eye-open "></span></button>';
+		}
+        return [btn].join('');
+    }
+	
+	function indexFormatter(value, row, index) {
+		var pageNumber = table.bootstrapTable('getOptions').pageNumber;  
+        var pageSize = table.bootstrapTable('getOptions').pageSize;  
+        return [(pageNumber-1) * pageSize+index+1].join('');
+    }
+	
+	function operateFormatter(value, row, index) {
+        return [
+            '<button data-toggle="tooltip" class="btn btn-success btn-xs edit" title="编辑">',
+            '<i class="glyphicon glyphicon-pencil"></i>',
+            '</button>  ',
+            '<button data-toggle="tooltip" class="btn btn-danger btn-xs remove" title="删除">',
+            '<i class="glyphicon glyphicon-remove"></i>',
+            '</button>'
+        ].join('');
+    }
+	
+	setTimeout(function(){
+		table.bootstrapTable('resetView');
+	}, 100);
+	
+	$(".columns.columns-right.btn-group.pull-right").prepend("<button data-toggle='tooltip' id='addBtn' class='btn btn-primary btn-md' title='新增'><i class='glyphicon glyphicon-plus'></i></button>");
+	
+	function edit(id){
+		layer.open({
+			  type:2,
+			  title: (id==null || id<=0)?'新增':'修改',
+			  maxmin: true,
+			  area:['768px','620px'],
+			  btn:['确定','取消'],
+			  content: 'admin/student/edit/'+id,
+			  yes: function(index, layero){
+				  var iframeName = layero.find("iframe")[0]['name'];
+				  var iframeWindow = window[iframeName];
+				  iframeWindow.submitThisForm();
+			  }
+			});
+	}
+	
+	$("#addBtn").on("click", function(){
+		edit(0);
+	});
+	
+	$(".form-inline").append("<button data-toggle='tooltip' id='resetBtn' class='btn btn-info btn-md'>显示全部</button>");
+	
+	$("#resetBtn").on("click", function(){
+		$("#keywords").val("");
+		$("#mainUserFlag").val("");
+		$("#vipType").val("");
+		$("#enable").val("");
+		refreshThisTable();
+	});
+	
+</script>
+#end

@@ -1,0 +1,192 @@
+#@innerLayout()
+#define main()
+<div id="toolbar">
+	<div class="form-inline" role="form">
+           <div class="form-group">
+           		<input placeholder="关键词查询" style="width: 120px;" id="keywords" name="keywords" type="text" class="form-control" onchange="refreshThisTable()"/>
+           </div>
+           <div class="form-group">
+           		<select class="form-control" id="binded"  name="binded" onchange="refreshThisTable()">
+           			<option value="">是否绑定会员</option>
+           			<option value="true">已绑定</option>
+           			<option value="false">未绑定</option>
+           		</select>
+           </div>
+           <button id="searchBtn" class="btn btn-primary btn-md">查询</button>
+          </div>
+      </div>
+<table id="table"
+	data-toolbar="#toolbar"
+           	data-show-refresh="true"
+            	data-show-toggle="false"
+           	data-show-columns="true"
+            	data-query-params="queryParams"></table>
+#end
+#define js()
+<script type="text/javascript">
+	var table = $('#table');
+	window.bindedEvents = {
+		'click button ':function(e, value, row, index){
+			layer.confirm('确认解绑该用户吗?', {icon: 3, title:'请确认'}, function(index){
+				var loadIndex = layer.load();
+				$.ajax({
+					type: "get",
+					dataType: "json",
+					url: "admin/user/toggleBinded/"+row.id,
+					success: function(ret){
+						if(ret.isOk){
+							layer.close(loadIndex);
+							layer.msg('操作成功！', {icon: 1, time:1000});
+							row['binded'] = !row['binded'];
+							table.bootstrapTable('updateRow', {
+								index: index,
+								row: row
+							});
+							refreshThisTable();
+						}
+					}
+				
+				})
+			});
+		}
+	};
+	
+	function refreshThisTable(){
+		table.bootstrapTable('refresh');
+	}
+	
+	$("#searchBtn").on("click", function(){
+		refreshThisTable();
+	});
+	
+	function queryParams(params) {
+        $('#toolbar').find('input,select').each(function () {
+            params[$(this).attr('name')] = $(this).val();
+        });
+        return params;
+    }
+	
+	table.bootstrapTable({
+		pagination: true,
+		striped: true,
+		sidePagination: "server",
+		url: "admin/user/list",
+		height:550,
+		pageNumber : 1,
+		pageSize: 5,
+		pageList:[5, 10, 15, 20, 30, 50],
+	    columns: [{
+	        field: 'index',
+	        title: '编号',
+               align: 'center'	,
+               formatter: indexFormatter
+	    }, {
+	        field: 'babyName',
+	        title: '宝宝姓名',
+               align: 'center'
+	    },{
+	        field: 'babyAge',
+	        title: '宝宝年龄',
+               align: 'center',
+               formatter: babyAgeFormatter
+	    },{
+	        field: 'name',
+	        title: '绑定人',
+               align: 'center'
+	    },{
+	        field: 'phone',
+	        title: '会员手机号',
+               align: 'center'
+	    },{
+	        field: 'gender',
+	        title: '性别',
+               align: 'center',
+               formatter: genderFormatter
+	    },{
+	        field: 'avatarUrl',
+	        title: '微信头像',
+               align: 'center',
+               formatter: avatarUrlFormatter
+	    },{
+	        field: 'updateTime',
+	        title: '更新时间',
+               align: 'center'
+	    },{
+	        field: 'role',
+	        title: '角色',
+               align: 'center'
+	    },{
+	        field: 'binded',
+	        title: '是否绑定会员',
+               align: 'center',
+               events: bindedEvents,
+               formatter: bindedFormatter
+	    }],
+           onResetView: function(){
+        	   $("[data-toggle='tooltip']").tooltip();
+           }
+	});
+	
+	function genderFormatter(value, row, index){
+		var age = '保密';
+		if(value == 1){
+			age = '男';
+		}else if(value == 2){
+			age = '女';
+		}
+		return [age].join('');
+	}
+	
+	function babyAgeFormatter(value, row, index){
+		var age = '';
+		if(value>0){
+			var year = '岁';
+			var month = '个月';
+			if(value<12){
+				age = value+month;
+			}else if(value%12!=0){
+				age = Math.floor(value/12)+year+(value%12)+month;
+			}else{
+				age = Math.floor(value/12)+year;
+			}
+		}
+		return [age].join('');
+	}
+	
+	function avatarUrlFormatter(value, row, index) {
+		if(value != ''){
+			btn = '<image style="width:60px;height:60px;" src="'+value+'"></image>';
+		}
+        return [btn].join('');
+    }
+	
+	function bindedFormatter(value, row, index) {
+ 		var btn;
+		if(value){
+			btn = '<button data-toggle="tooltip" class="btn btn-success btn-xs" data-placement="left" title="点击解绑"><span  class="glyphicon glyphicon-eye-close "></span></button>';
+		}else{
+			btn = '未绑定';
+		}
+        return [btn].join(''); 
+    }
+	
+	function indexFormatter(value, row, index) {
+		var pageNumber = table.bootstrapTable('getOptions').pageNumber;  
+        var pageSize = table.bootstrapTable('getOptions').pageSize;  
+        return [(pageNumber-1) * pageSize+index+1].join('');
+    }
+	
+	setTimeout(function(){
+		table.bootstrapTable('resetView');
+	}, 100);
+	
+	$(".form-inline").append("<button data-toggle='tooltip' id='resetBtn' class='btn btn-info btn-md'>显示全部</button>");
+	
+	$("#resetBtn").on("click", function(){
+		$("#keywords").val("");
+		$("#binded").val("");
+		refreshThisTable();
+	});
+	
+</script>
+#end

@@ -1,0 +1,276 @@
+#@innerLayout()
+#define main()
+<div id="toolbar">
+	<div class="form-inline" role="form">
+           <div class="form-group">
+           		<input placeholder="关键词查询" id="keywords" name="keywords" type="text" class="form-control" onchange="refreshThisTable()"/>
+           </div>
+           <div class="form-group">
+           		<select class="form-control" id="type" name="type" onchange="refreshThisTable()">
+           			<option value="">课程类别</option>
+           			#for(courseType : courseTypes)
+						<option value="#(courseType.type)">#(courseType.type)</option>
+					#end
+           		</select>
+           </div>
+           <button id="searchBtn" class="btn btn-primary btn-md">查询</button>
+          </div>
+      </div>
+<table id="table"
+	data-toolbar="#toolbar"
+           	data-show-refresh="true"
+            	data-show-toggle="true"
+           	data-show-columns="true"
+            	data-query-params="queryParams"></table>
+#end
+#define js()
+<script type="text/javascript">
+	var table = $('#table');
+	window.enableEvents = {
+		'click button ':function(e, value, row, index){
+			layer.confirm('确认'+(value?"禁用":"启用")+'该课程吗?', {icon: 3, title:'请确认'}, function(index){
+				var loadIndex = layer.load();
+				$.ajax({
+					type: "get",
+					dataType: "json",
+					url: "admin/course/toggleEnable/"+row.id,
+					success: function(ret){
+						if(ret.isOk){
+							layer.close(loadIndex);
+							layer.msg('操作成功！', {icon: 1, time:1000});
+							row['enable'] = !row['enable'];
+							table.bootstrapTable('updateRow', {
+								index: index,
+								row: row
+							});
+						}
+					}
+				
+				})
+			});
+			if(value){
+				
+			}else{
+				
+			}
+		}
+	};
+	window.operateEvents = {
+		'click .edit':function(e, value, row, index){
+			edit(row.id);
+		},
+		'click .remove':function(e, value, row, index){
+			layer.confirm('确认删除?', {icon: 3, title:'请确认'}, function(index){
+				var loadIndex = layer.load();
+				$.ajax({
+					type: "get",
+					dataType: "json",
+					url: "admin/course/delete/"+row.id,
+					success: function(ret){
+						layer.close(loadIndex);
+						if(ret.isOk){
+							layer.msg('删除成功！', {icon: 1, time:1000});
+							table.bootstrapTable('remove', {
+								field: 'id',
+								values: [row.id]
+							});
+							refreshThisTable();
+						}
+					}
+				
+				})
+			});
+		}
+	};
+	
+	function refreshThisTable(){
+		table.bootstrapTable('refresh');
+	}
+	
+	$("#searchBtn").on("click", function(){
+		refreshThisTable();
+	});
+	
+	function queryParams(params) {
+        $('#toolbar').find('input,select').each(function () {
+            params[$(this).attr('name')] = $(this).val();
+        });
+        return params;
+    }
+	
+	table.bootstrapTable({
+		pagination: true,
+		striped: true,
+		sidePagination: "server",
+		url: "admin/course/list",
+		height:550,
+		pageList:[5, 10, 15, 20, 30, 50],
+	    columns: [{
+	        field: 'index',
+	        title: '编号',
+               align: 'center'	,
+               formatter: indexFormatter
+	    }, {
+	        field: 'name',
+	        title: '课程名称',
+               align: 'center',
+           	   editable: {
+               	   type: "text",
+               	   placeholder: "请输入课程名称！",
+               	   validate:function(v){
+               		   if(!($.trim(v))) return "课程名称不能为空"	;
+               	   }
+              }
+	    },{
+	        field: 'type',
+	        title: '课程类别',
+               align: 'center'
+	    },{
+	        field: 'duration',
+	        title: '课程时长(分钟)',
+               align: 'center'
+	    },{
+	        field: 'minAge',
+	        title: '最小年龄',
+               align: 'center',
+               formatter: ageFormatter
+	    },{
+	        field: 'maxAge',
+	        title: '最大年龄',
+               align: 'center',
+               formatter: ageFormatter
+	    },{
+	        field: 'updateTime',
+	        title: '修改时间',
+               align: 'center',
+	    },{
+	        field: 'remarks',
+	        title: '备注',
+               align: 'center',
+               editable: {
+               	   type: "textarea",
+               	   rows: 3,
+               	   placeholder: "请输入备注信息！",
+              }
+	    },{
+	        field: 'enable',
+	        title: '是否启用',
+               align: 'center',
+               events: enableEvents,
+               formatter: enableFormatter
+	    }, { 
+               field: 'operate',
+               title: '操作',
+               align: 'center',
+               events: operateEvents,
+               formatter: operateFormatter
+           }],
+           onResetView: function(){
+        	   $("[data-toggle='tooltip']").tooltip();
+        	   $("#addBtn").parent().find("[title]").tooltip();
+           },
+           onEditableSave: function(field, row, oldValue, el){
+        	   table.bootstrapTable('resetView');
+        	   var loadIndex = layer.load();
+        	   var course = {
+        			   "course.id": row.id,
+        			   "course.name": row.name,
+        			   "course.remarks": row.remarks
+        	   };
+        	   $.ajax({
+					type: "post",
+					dataType: "json",
+					url: "admin/course/save",
+					data: course,
+					success: function(ret){
+						layer.close(loadIndex);
+						if(ret.isOk){
+							layer.msg('更新成功！', {icon: 1, time:1000});
+						}else{
+							layer.msg('更新失败！', {icon: 5, time:1000});
+						}
+					}
+				
+				})
+           }
+	});
+	
+	function enableFormatter(value, row, index) {
+		var btn;
+		if(value){
+			btn = '<button data-toggle="tooltip" class="btn btn-success btn-xs" data-placement="left" title="点击禁用该课程"><span  class="glyphicon glyphicon-eye-close "></span></button>';
+		}else{
+			btn = '<button data-toggle="tooltip" class="btn btn-danger btn-xs" data-placement="left" title="点击启用该课程"><span  class="glyphicon glyphicon-eye-open "></span></button>';
+		}
+        return [btn].join('');
+    }
+	
+	function ageFormatter(value, row, index){
+		var year = '岁';
+		var month = '个月';
+		var age = '';
+		if(value == null){
+			age = '无限制';
+		}else if(value<12){
+			age = value+month;
+		}else if(value%12!=0){
+			age = Math.floor(value/12)+year+(value%12)+month;
+		}else{
+			age = Math.floor(value/12)+year;
+		}
+		return [age].join('');
+	}
+	
+	function indexFormatter(value, row, index) {
+		var pageNumber = table.bootstrapTable('getOptions').pageNumber;  
+        var pageSize = table.bootstrapTable('getOptions').pageSize;  
+        return [(pageNumber-1) * pageSize+index+1].join('');
+    }
+	
+	function operateFormatter(value, row, index) {
+        return [
+            '<button data-toggle="tooltip" class="btn btn-success btn-xs edit" title="编辑">',
+            '<i class="glyphicon glyphicon-pencil"></i>',
+            '</button>  ',
+            '<button data-toggle="tooltip" class="btn btn-danger btn-xs remove" title="删除">',
+            '<i class="glyphicon glyphicon-remove"></i>',
+            '</button>'
+        ].join('');
+    }
+	
+	setTimeout(function(){
+		table.bootstrapTable('resetView');
+	}, 100);
+	
+	$(".columns.columns-right.btn-group.pull-right").prepend("<button data-toggle='tooltip' id='addBtn' class='btn btn-primary btn-md' title='新增'><i class='glyphicon glyphicon-plus'></i></button>");
+	
+	function edit(id){
+		layer.open({
+			  type:2,
+			  title: (id==null || id<=0)?'新增':'修改',
+			  maxmin: true,
+			  area:['768px','620px'],
+			  btn:['确定','取消'],
+			  content: 'admin/course/edit/'+id,
+			  yes: function(index, layero){
+				  var iframeName = layero.find("iframe")[0]['name'];
+				  var iframeWindow = window[iframeName];
+				  iframeWindow.submitThisForm();
+			  }
+			});
+	}
+	
+	$("#addBtn").on("click", function(){
+		edit(0);
+	});
+	
+	$(".form-inline").append("<button data-toggle='tooltip' id='resetBtn' class='btn btn-info btn-md'>显示全部</button>");
+	
+	$("#resetBtn").on("click", function(){
+		$("#keywords").val("");
+		$("#type").val("");
+		refreshThisTable();
+	});
+	
+</script>
+#end

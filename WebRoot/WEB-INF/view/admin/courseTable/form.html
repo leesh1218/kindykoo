@@ -1,0 +1,97 @@
+#@layerFormLayout()
+#define main()
+<form id="form" class="form-horizontal" role="form" action="admin/courseTable/submit" data-validator-option="{theme:'bootstrap', timely:2, stopOnError:true}">
+	<input type="hidden" value="#(courseTable.id??)" name="courseTable.id"/>
+	<input type="hidden" value="" id="teacherStatus" name="teacherStatus"/>
+	<div class="form-group">
+		<label class="control-label col-sm-2">周数</label>
+		<div class="col-sm-6">
+			<input type="text" data-rule="required;digits;" maxlength="10"  placeholder="请输入周数" #(courseTable!=null?"readonly='readonly'":"") class="form-control" value="#(courseTable.weekCount??)" name="courseTable.weekCount" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">星期</label>
+		<div class="col-sm-3">
+			<select name="courseTable.week"  class="form-control">
+				#for(week : weeks)
+				<option #((courseTable!=null && courseTable.week==(week))?"selected":"") value="#(week)">#(week)</option>
+				#end
+			</select>
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">上课时间</label>
+		<div class="col-sm-3">
+			<select name="courseTable.courseTime"  class="form-control">
+				#for(courseTime : courseTimes)
+				<option #((courseTable!=null && courseTable.courseTime==(courseTime.time))?"selected":"") value="#(courseTime.time)">#(courseTime.time)</option>
+				#end
+			</select>
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">课程</label>
+		<div class="col-sm-3">
+			<select name="courseTable.course"  class="form-control">
+				#for(course : courses)
+				<option #((courseTable!=null && courseTable.course==(course.name))?"selected":"") value="#(course.name)">#(course.name)</option>
+				#end
+			</select>
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">主教</label>
+		<div class="col-sm-3">
+			<select name="courseTable.teacher1" onchange="changeTeacherStatus()" class="form-control">
+				#for(teacher : teachers)
+				<option #((courseTable!=null && courseTable.teacher1==(teacher.name))?"selected":"") value="#(teacher.name)">#(teacher.name)</option>
+				#end
+			</select>
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">助教</label>
+		<div class="col-sm-3">
+			<select name="courseTable.teacher2" onchange="changeTeacherStatus()" class="form-control">
+				#for(teacher : teachers)
+				<option #((courseTable!=null && courseTable.teacher2==(teacher.name))?"selected":"") value="#(teacher.name)">#(teacher.name)</option>
+				#end
+			</select>
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">教室</label>
+		<div class="col-sm-3">
+			<select name="courseTable.classroom"  class="form-control">
+				#for(classroom : classrooms)
+				<option #((courseTable!=null && courseTable.classroom==(classroom.name))?"selected":"") value="#(classroom.name)">#(classroom.name)</option>
+				#end
+			</select>
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">最大固定人数</label>
+		<div class="col-sm-6">
+			<input type="text" data-rule="required;digits;" placeholder="请输入最大固定人数" class="form-control" value="#(courseTable.maxFixedNum??)" name="courseTable.maxFixedNum" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">最大人数</label>
+		<div class="col-sm-6">
+			<input type="text" data-rule="required;digits;" placeholder="请输入最大可预约人数" class="form-control" value="#(courseTable.maxNumber??)" name="courseTable.maxNumber" />
+		</div>
+	</div>
+</form>
+#end
+#define js()
+<script type="text/javascript">
+
+	function changeTeacherStatus(){
+		$("#teacherStatus").val("teacher");
+	}
+
+	function submitThisForm(){
+		$("#form").submit();
+	}
+</script>
+#end

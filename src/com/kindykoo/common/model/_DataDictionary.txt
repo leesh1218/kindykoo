@@ -1,0 +1,226 @@
+Table: classroom
+------------+--------------+------+-----+---------+---------
+ Field      | Type         | Null | Key | Default | Remarks 
+------------+--------------+------+-----+---------+---------
+ id         | INT(10)      | NO   | PRI |         | 教室id    
+ name       | VARCHAR(20)  | NO   |     |         | 教室名称    
+ updateTime | DATETIME(19) | YES  |     |         | 修改时间    
+ remarks    | VARCHAR(255) | YES  |     |         | 备注      
+ enable     | BIT(1)       | NO   |     |         | 是否启用    
+------------+--------------+------+-----+---------+---------
+
+Table: course
+------------+--------------+------+-----+---------+---------
+ Field      | Type         | Null | Key | Default | Remarks 
+------------+--------------+------+-----+---------+---------
+ id         | INT(10)      | NO   | PRI |         | 课程id    
+ name       | VARCHAR(50)  | NO   |     |         | 课程名称    
+ minAge     | INT(10)      | NO   |     |         | 最小年龄要求  
+ maxAge     | INT(10)      | YES  |     |         |         
+ type       | VARCHAR(50)  | NO   |     |         | 课程类型    
+ duration   | INT(10)      | NO   |     |         | 课程时长（分钟）
+ updateTime | DATETIME(19) | YES  |     |         | 修改时间    
+ remarks    | VARCHAR(255) | YES  |     |         | 备注信息    
+ enable     | BIT(1)       | NO   |     |         | 是否启用    
+------------+--------------+------+-----+---------+---------
+
+Table: courseTable
+-------------+--------------+------+-----+---------+---------
+ Field       | Type         | Null | Key | Default | Remarks 
+-------------+--------------+------+-----+---------+---------
+ id          | INT(10)      | NO   | PRI |         | 课表id    
+ weekCount   | INT(10)      | NO   |     |         | 周数(0代表本周)
+ week        | VARCHAR(20)  | NO   |     |         | 星期      
+ date        | DATETIME(19) | NO   |     |         | 上课日期    
+ beginTime   | TIME(8)      | NO   |     |         | 上课时间    
+ endTime     | TIME(8)      | YES  |     |         | 结束时间    
+ courseTime  | VARCHAR(50)  | NO   |     |         | 课程时间    
+ course      | VARCHAR(50)  | NO   |     |         | 课程      
+ minAge      | INT(10)      | NO   |     |         | 最小年龄    
+ maxAge      | INT(10)      | YES  |     |         | 最大年龄    
+ teacher1    | VARCHAR(50)  | NO   |     |         | 主教      
+ teacher2    | VARCHAR(50)  | NO   |     |         | 助教      
+ classroom   | VARCHAR(50)  | YES  |     |         | 教室      
+ stuNumber   | INT(10)      | NO   |     | 0       | 已预约人数   
+ maxNumber   | INT(10)      | NO   |     |         | 最大可预约人数 
+ updateTime  | DATETIME(19) | YES  |     |         | 修改时间    
+ fixedNum    | INT(10)      | NO   |     | 0       | 固定人数    
+ maxFixedNum | INT(10)      | NO   |     | 6       |         
+ allowFixed  | BIT(1)       | NO   |     |         | 是否可固定课程 
+ status      | VARCHAR(11)  | NO   |     |         | 课程状态    
+ enable      | BIT(1)       | NO   |     |         | 是否可预约   
+-------------+--------------+------+-----+---------+---------
+
+Table: courseTime
+------------+--------------+------+-----+---------+---------
+ Field      | Type         | Null | Key | Default | Remarks 
+------------+--------------+------+-----+---------+---------
+ id         | INT(10)      | NO   | PRI |         | 课程时间id  
+ name       | VARCHAR(20)  | NO   |     |         | 课程时间名称(格式：上午1，上午2)
+ time       | VARCHAR(20)  | NO   |     |         | 上课时间（格式：09:00～09:55）
+ beginTime  | TIME(8)      | NO   |     |         |         
+ endTime    | TIME(8)      | NO   |     |         |         
+ updateTime | DATETIME(19) | YES  |     |         | 修改时间    
+ remarks    | VARCHAR(255) | YES  |     |         | 备注      
+ enable     | BIT(1)       | NO   |     |         | 是否启用    
+------------+--------------+------+-----+---------+---------
+
+Table: logs
+-------+--------------+------+-----+---------+---------
+ Field | Type         | Null | Key | Default | Remarks 
+-------+--------------+------+-----+---------+---------
+ id    | INT(10)      | NO   | PRI |         |         
+ time  | DATETIME(19) | YES  |     |         |         
+ desc  | VARCHAR(800) | YES  |     |         |         
+-------+--------------+------+-----+---------+---------
+
+Table: menu
+---------+--------------+------+-----+---------+---------
+ Field   | Type         | Null | Key | Default | Remarks 
+---------+--------------+------+-----+---------+---------
+ id      | INT(10)      | NO   | PRI |         |         
+ channel | VARCHAR(11)  | NO   |     |         |         
+ role    | VARCHAR(20)  | NO   |     |         |         
+ text    | VARCHAR(50)  | NO   |     |         |         
+ url     | VARCHAR(255) | NO   |     |         |         
+ icon    | VARCHAR(255) | YES  |     |         |         
+---------+--------------+------+-----+---------+---------
+
+Table: paras
+--------+-------------+------+-----+---------+---------
+ Field  | Type        | Null | Key | Default | Remarks 
+--------+-------------+------+-----+---------+---------
+ id     | INT(10)     | NO   | PRI |         |         
+ name   | VARCHAR(20) | NO   |     |         | 参数名字    
+ value  | VARCHAR(20) | NO   |     |         | 参数值     
+ desc   | VARCHAR(50) | YES  |     |         | 参数含义描述  
+ enable | BIT(1)      | NO   |     |         | 参数是否启用  
+--------+-------------+------+-----+---------+---------
+
+Table: reserveCourse
+---------------+--------------+------+-----+---------+---------
+ Field         | Type         | Null | Key | Default | Remarks 
+---------------+--------------+------+-----+---------+---------
+ id            | INT(10)      | NO   | PRI |         | 预约课程表id 
+ studentName   | VARCHAR(11)  | NO   |     |         | 学生姓名    
+ courseTableID | INT(10)      | NO   |     |         |         
+ weekCount     | INT(10)      | NO   |     |         | 课表id    
+ week          | VARCHAR(20)  | NO   |     |         |         
+ date          | DATETIME(19) | NO   |     |         | 上课时间    
+ courseTime    | VARCHAR(50)  | NO   |     |         |         
+ course        | VARCHAR(50)  | NO   |     |         |         
+ teacher1      | VARCHAR(50)  | NO   |     |         |         
+ teacher2      | VARCHAR(50)  | NO   |     |         |         
+ classroom     | VARCHAR(50)  | YES  |     |         |         
+ operator      | VARCHAR(50)  | NO   |     |         | 预约人     
+ phone         | VARCHAR(11)  | YES  |     |         |         
+ reserveType   | VARCHAR(11)  | NO   |     |         |         
+ reserveTime   | DATETIME(19) | NO   |     |         | 预约时间    
+ enableMan     | VARCHAR(50)  | YES  |     |         | 请假人     
+ enableTime    | DATETIME(19) | YES  |     |         | 请假时间    
+ confirmMan    | VARCHAR(50)  | YES  |     |         | 确认人     
+ confirmTime   | DATETIME(19) | YES  |     |         | 老师确认签到时间
+ present       | BIT(1)       | NO   |     |         | 是否来上课   
+ status        | VARCHAR(11)  | NO   |     |         | 已预约，已请假，上课中，未确认，已确认
+---------------+--------------+------+-----+---------+---------
+
+Table: reserveCourseHistory
+---------------+--------------+------+-----+---------+---------
+ Field         | Type         | Null | Key | Default | Remarks 
+---------------+--------------+------+-----+---------+---------
+ id            | INT(10)      | NO   | PRI |         | 预约课程表id 
+ studentName   | VARCHAR(11)  | NO   |     |         | 学生姓名    
+ courseTableID | INT(10)      | NO   |     |         |         
+ weekCount     | INT(10)      | NO   |     |         | 课表id    
+ week          | VARCHAR(20)  | NO   |     |         |         
+ date          | DATETIME(19) | NO   |     |         | 上课时间    
+ courseTime    | VARCHAR(50)  | NO   |     |         |         
+ course        | VARCHAR(50)  | NO   |     |         |         
+ teacher1      | VARCHAR(50)  | NO   |     |         |         
+ teacher2      | VARCHAR(50)  | NO   |     |         |         
+ classroom     | VARCHAR(50)  | YES  |     |         |         
+ operator      | VARCHAR(50)  | NO   |     |         | 预约人     
+ phone         | VARCHAR(11)  | YES  |     |         |         
+ reserveType   | VARCHAR(11)  | NO   |     |         |         
+ reserveTime   | DATETIME(19) | NO   |     |         | 预约时间    
+ enableMan     | VARCHAR(50)  | YES  |     |         | 请假人     
+ enableTime    | DATETIME(19) | YES  |     |         | 请假时间    
+ confirmMan    | VARCHAR(50)  | YES  |     |         | 确认人     
+ confirmTime   | DATETIME(19) | YES  |     |         | 老师确认签到时间
+ present       | BIT(1)       | NO   |     |         | 是否来上课   
+ status        | VARCHAR(11)  | NO   |     |         | 已预约，已请假，上课中，未确认，已确认
+---------------+--------------+------+-----+---------+---------
+
+Table: student
+---------------------+--------------+------+-----+---------+---------
+ Field               | Type         | Null | Key | Default | Remarks 
+---------------------+--------------+------+-----+---------+---------
+ id                  | INT(10)      | NO   | PRI |         | 学员id    
+ name                | VARCHAR(50)  | NO   |     |         | 学员姓名    
+ nickName            | VARCHAR(50)  | YES  |     |         | 昵称      
+ age                 | INT(10)      | YES  |     |         | 月       
+ birthday            | DATE(10)     | NO   |     |         | 学员生日    
+ sex                 | VARCHAR(11)  | YES  |     |         | 学员性别    
+ contact             | VARCHAR(20)  | YES  |     |         | 联系人     
+ phone               | VARCHAR(11)  | NO   |     |         | 联系人手机号  
+ email               | VARCHAR(50)  | YES  |     |         | 联系人邮箱   
+ relationship        | VARCHAR(20)  | YES  |     |         | 关系(爸爸，妈妈，爷爷，奶奶，姥爷，姥姥，其他)
+ registerDate        | DATE(10)     | YES  |     |         | 注册时间    
+ updateTime          | DATETIME(19) | YES  |     |         | 修改时间    
+ vipCardNo           | VARCHAR(11)  | YES  |     |         |         
+ vipType             | VARCHAR(20)  | YES  |     |         | 会员类型(半年卡，年卡，两年卡，课时卡)
+ mainUserFlag        | VARCHAR(11)  | YES  |     |         | 主用户标志   
+ mainUserName        | VARCHAR(50)  | YES  |     | 0       | 主用户姓名   
+ beginDate           | DATE(10)     | YES  |     |         | 会员卡开始时间 
+ endDate             | DATE(10)     | YES  |     |         | 到期时间    
+ disableCourseCount  | INT(10)      | YES  |     |         | 冻结的课程（已预约还没有上的课）
+ activityCourseCount | INT(10)      | YES  |     |         | 活动消的课时  
+ useCourseCount      | INT(10)      | YES  |     |         |         
+ remainCourseCount   | INT(10)      | YES  |     |         | 已上课时数   
+ presentCourseCount  | INT(10)      | YES  |     |         | 赠送课时    
+ vipCourseCount      | INT(10)      | YES  |     |         | 合约课时    
+ courseCount         | INT(10)      | YES  |     |         | 总课时数    
+ weekReserveCount    | INT(10)      | YES  |     |         | 本周预约课数  
+ weekMaxCount        | INT(10)      | YES  |     | 4       | 每周最大约课次数
+ counts              | INT(10)      | YES  |     | 0       | 本周未请假也未上课的次数
+ remarks             | TEXT(65535)  | YES  |     |         | 备注信息    
+ remainAmount        | INT(10)      | YES  |     |         | 剩余金额    
+ allAmount           | INT(10)      | YES  |     |         | 费用      
+ enable              | BIT(1)       | YES  |     |         | 是否可预约课程 
+---------------------+--------------+------+-----+---------+---------
+
+Table: teacher
+------------+--------------+------+-----+---------+---------
+ Field      | Type         | Null | Key | Default | Remarks 
+------------+--------------+------+-----+---------+---------
+ id         | INT(10)      | NO   | PRI |         | 教师id    
+ name       | VARCHAR(50)  | NO   |     |         | 姓名      
+ age        | VARCHAR(20)  | YES  |     |         | 年龄      
+ sex        | VARCHAR(11)  | YES  |     |         | 性别      
+ phone      | VARCHAR(11)  | NO   |     |         | 手机号     
+ email      | VARCHAR(50)  | YES  |     |         | 邮箱      
+ entryDate  | DATE(10)     | YES  |     |         | 入职日期    
+ updateTime | DATETIME(19) | YES  |     |         | 修改时间    
+ remarks    | TEXT(65535)  | YES  |     |         | 备注信息    
+ enable     | BIT(1)       | NO   |     |         | 是否启用    
+------------+--------------+------+-----+---------+---------
+
+Table: user
+------------+--------------+------+-----+---------+---------
+ Field      | Type         | Null | Key | Default | Remarks 
+------------+--------------+------+-----+---------+---------
+ id         | INT(10)      | NO   | PRI |         |         
+ babyName   | VARCHAR(200) | YES  |     |         | 宝宝姓名    
+ babyAge    | INT(10)      | YES  |     |         | 月       
+ name       | VARCHAR(200) | YES  |     |         | 家长姓名    
+ phone      | VARCHAR(11)  | YES  |     |         | 手机      
+ gender     | INT(10)      | YES  |     |         | 性别1-男，2-女
+ avatarUrl  | VARCHAR(255) | YES  |     |         | 图象 url  
+ openid     | VARCHAR(255) | NO   |     |         |         
+ role       | VARCHAR(20)  | YES  |     |         | 家长，教师，管理员
+ binded     | BIT(1)       | NO   |     |         |         
+ updateTime | DATETIME(19) | YES  |     |         | 更新时间    
+ bakNum     | INT(10)      | YES  |     |         |         
+ bakChar    | VARCHAR(50)  | YES  |     |         |         
+------------+--------------+------+-----+---------+---------
+

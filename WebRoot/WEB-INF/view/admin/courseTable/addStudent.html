@@ -1,0 +1,124 @@
+#@layerFormLayout()
+#define main()
+<form id="form" class="form-horizontal" role="form" action="admin/reserveCourse/reserveCourseAdmin" data-validator-option="{theme:'bootstrap', timely:2, stopOnError:true}">
+	<input type="hidden" value="#(id??)" name="id"/>
+	<input type="hidden" id="enable" value="#(enable??)" name="enable"/>
+	
+	<div class="form-group">
+		<label class="control-label col-sm-2">周数</label>
+		<div class="col-sm-6">
+			<input type="text" readonly="readonly" class="form-control" value="#(weekCount??)" name="weekCount" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">星期</label>
+		<div class="col-sm-6">
+			<input type="text" readonly="readonly" class="form-control" value="#(week??)" name="week" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">上课时间</label>
+		<div class="col-sm-6">
+			<input type="text" readonly="readonly" class="form-control" value="#(courseTime??)" name="courseTime" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">课程</label>
+		<div class="col-sm-6">
+			<input type="text" readonly="readonly" class="form-control" value="#(course??)" name="course" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">主教</label>
+		<div class="col-sm-6">
+			<input type="text" readonly="readonly" class="form-control" value="#(teacher1??)" name="teacher1" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">助教</label>
+		<div class="col-sm-6">
+			<input type="text" readonly="readonly" class="form-control" value="#(teacher2??)" name="teacher2" />
+		</div>
+	</div>
+	<!--  
+	<div class="form-group">
+		<label class="control-label col-sm-2">教室</label>
+		<div class="col-sm-6">
+			<input type="text" readonly="readonly" class="form-control" value="#(classroom??)" name="classroom" />
+		</div>
+	</div>
+	-->
+	<div class="form-group">
+		<label class="control-label col-sm-2">学生人数</label>
+		<div class="col-sm-6">
+			<input type="text" readonly="readonly" class="form-control" value="#(stuNumber??)" name="stuNumber" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">已预约学生</label>
+		<div class="col-sm-6">
+			<textarea rows="2" readonly="readonly" class="form-control" name="student">#(student??)</textarea>
+		</div>
+	</div>
+	<div id="div_babyName" class="form-group">
+		<label class="control-label col-sm-2">待添加学生</label>
+		<div class="col-sm-6">
+			<input type="text" id="babyName" onblur="checkBabyName()"  placeholder="请输入待添加学生姓名"  class="form-control" name="babyName" />
+		</div>
+	</div>
+	<div id="div_phone" class="form-group">
+		<label class="control-label col-sm-2">家长手机号</label>
+		<div class="col-sm-6">
+			<input type="text" id="phone" maxlength="11" onblur="checkPhone()"  data-rule="required; digits;length(11)"   placeholder="请输入家长手机号"  class="form-control" name="phone" />
+		</div>
+	</div>
+</form>
+#end
+#define js()
+<script type="text/javascript">
+
+$(function(){
+	$("#div_babyName").hide();
+	var enable = $("#enable").val();
+	if(enable == "true"){
+		$("#div_babyName").show();
+	}else{
+		$("#div_babyName").hide();
+		layer.alert('该课程禁止预约！', {
+		    skin: 'layui-layer-lan'
+		    ,closeBtn: 0
+		    ,anim: 5 //动画类型
+		  });
+	}
+})
+
+function checkPhone(){
+
+}
+
+function checkBabyName(){
+		var babyName = $("#babyName").val();
+		if(babyName != ''){
+			$.ajax({
+				type: "post",
+				dataType: "json",
+				url: "admin/student/checkBabyName",
+				data: {
+					babyName: babyName
+				},
+				success: function(ret){
+					if(!ret.isOk){
+						layer.msg(ret.infoMsg, {icon: 5, time:2000});
+						$("#babyName").val('');
+						$("#babyName").focus();
+					}
+				}
+			})
+		}
+	}
+
+	function submitThisForm(){
+		$("#form").submit();
+	}
+</script>
+#end

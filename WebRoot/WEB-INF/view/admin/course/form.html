@@ -1,0 +1,54 @@
+#@layerFormLayout()
+#define main()
+<form id="form" class="form-horizontal" role="form" action="admin/course/submit" data-validator-option="{theme:'bootstrap', timely:2, stopOnError:true}">
+	<input type="hidden" value="#(course.id??)" name="course.id"/>
+	<div class="form-group">
+		<label class="control-label col-sm-2">课程名称</label>
+		<div class="col-sm-6">
+			<input type="text" data-rule="required;" maxlength="10"  placeholder="请输入课程名称" class="form-control" value="#(course.name??)" name="course.name" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">课程类别</label>
+		<div class="col-sm-3">
+			<select name="course.type"  class="form-control">
+				#for(courseType : courseTypes)
+					<option #((course!=null && course.type==(courseType.type))?"selected":"") value="#(courseType.type)">#(courseType.type)</option>
+				#end
+			</select>
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">课程时长</label>
+		<div class="col-sm-6">
+			<input type="text" data-rule="required;digits" placeholder="请输入课程时长" data-tip="单位：分钟" class="form-control" value="#(course.duration??)" name="course.duration" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">最小年龄</label>
+		<div class="col-sm-6">
+			<input type="text" data-rule="required;digits" placeholder="请输入最小年龄" data-tip="单位：月" class="form-control" value="#(course.minAge??)" name="course.minAge" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">最大年龄</label>
+		<div class="col-sm-6">
+			<input type="text" data-rule="required;digits" placeholder="请输入最大年龄" data-tip="单位：月" class="form-control" value="#(course.maxAge??)" name="course.maxAge" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">备注</label>
+		<div class="col-sm-6">
+			<textarea rows="2"  placeholder="请输入备注信息" class="form-control" name="course.remarks">#(course.remarks??)</textarea>
+		</div>
+	</div>
+</form>
+#end
+#define js()
+<script type="text/javascript">
+
+	function submitThisForm(){
+		$("#form").submit();
+	}
+</script>
+#end

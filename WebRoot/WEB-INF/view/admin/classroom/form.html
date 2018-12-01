@@ -1,0 +1,26 @@
+#@layerFormLayout()
+#define main()
+<form id="form" class="form-horizontal" role="form" action="admin/classroom/submit" data-validator-option="{theme:'bootstrap', timely:2, stopOnError:true}">
+	<input type="hidden" value="#(classroom.id??)" name="classroom.id"/>
+	<div class="form-group">
+		<label class="control-label col-sm-2">教室名称</label>
+		<div class="col-sm-6">
+			<input type="text" data-rule="required;" maxlength="10"  placeholder="请输入课程时间名称" class="form-control" value="#(classroom.name??)" name="classroom.name" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">备注</label>
+		<div class="col-sm-6">
+			<textarea rows="2"  placeholder="请输入备注信息" class="form-control" name="classroom.remarks">#(classroom.remarks??)</textarea>
+		</div>
+	</div>
+</form>
+#end
+#define js()
+<script type="text/javascript">
+
+	function submitThisForm(){
+		$("#form").submit();
+	}
+</script>
+#end

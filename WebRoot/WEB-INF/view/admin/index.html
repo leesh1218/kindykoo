@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<base href="#(basePath)">
+		<meta charset="utf-8" />
+		<title>亲亲袋鼠早教中心</title>
+		<link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+		<link rel="stylesheet" href="assets/css/style.css">
+	</head>
+
+	<body>
+		<nav class="navbar navbar-default">
+			<div class="container-fluid">
+				<div class="navbar-header">
+					<span class="navbar-brand">亲亲袋鼠石景山中心后台</span>
+				</div>
+
+				<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+					<ul class="nav navbar-nav" id="admin_nav">
+						<li class="active">
+							<a href="admin/summary" target="main_iframe">聚合首页</a>
+						</li>
+						<li>
+							<a href="admin/student" target="main_iframe">会员管理</a>
+						</li>
+						<li>
+							<a href="admin/teacher" target="main_iframe">教师管理</a>
+						</li>
+						<li class="dropdown">
+							<a href="#" class="dropdown-toggle" target="main_iframe" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">课程管理<span class="caret"></span></a>
+							<ul class="dropdown-menu">
+								<li>
+									<a href="admin/course"  target="main_iframe">课程</a>
+								</li>
+								<li>
+									<a href="admin/classroom"  target="main_iframe">教室</a>
+								</li>
+								<li>
+									<a href="admin/courseTime"  target="main_iframe">上课时间</a>
+								</li>
+							</ul>
+						</li>
+						<li>
+							<a href="admin/courseTable"  target="main_iframe">课表管理</a>
+						</li>
+						<li>
+							<a href="admin/reserveCourse"  target="main_iframe">约课管理</a>
+						</li>
+						<li class="dropdown">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">系统<span class="caret"></span></a>
+							<ul class="dropdown-menu">
+								<li>
+									<a href="admin/user"  target="main_iframe">小程序用户管理</a>
+								</li>
+								<li role="separator" class="divider"></li>
+								<li>
+									<a href="admin/student/studentAgeUpdate" target="main_iframe">会员年龄同步</a>
+								</li>
+								<li>
+									<a href="admin/courseTable/ageUpdate"  target="main_iframe">课程年龄同步</a>
+								</li>
+							</ul>
+						</li>
+					</ul>
+					<ul class="nav navbar-nav navbar-right">
+						<li>
+							<a href="#">安全退出</a>
+						</li>
+						<li class="dropdown">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">admin <span class="caret"></span></a>
+							<ul class="dropdown-menu">
+								<li>
+									<a href="#">个人中心</a>
+								</li>
+								<li>
+									<a href="#">修改密码</a>
+								</li>
+							</ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</nav>
+		<div class="iframe_box">
+			<iframe name="main_iframe" src="admin/summary" frameborder="0" border="0" marginheight="0" marginwidth="0" scrolling="auto"></iframe>
+		</div>
+	</body>
+	<script src="//cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
+	<script src="//cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="assets/js/admin.js" ></script>
+</html>

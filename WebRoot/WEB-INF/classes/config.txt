@@ -1,0 +1,30 @@
+cron4j=updateCourseStatusBegin, updateCourseStatusEnd, initWeekReserveCount,updateAccess_token, notifyReserveCourseCondition, startReserveCourse
+updateCourseStatusBegin.cron=0,30 * * * *
+updateCourseStatusBegin.class=com.kindykoo.common.task.UpdateCourseStatusBegin
+updateCourseStatusBegin.daemon=true
+updateCourseStatusBegin.enable=true
+ 
+ updateCourseStatusEnd.cron=15,45 * * * *
+updateCourseStatusEnd.class=com.kindykoo.common.task.UpdateCourseStatusEnd
+updateCourseStatusEnd.daemon=true
+updateCourseStatusEnd.enable=true
+ 
+initWeekReserveCount.cron=55 23 * * 0
+initWeekReserveCount.class=com.kindykoo.common.task.InitWeekReserveCount
+initWeekReserveCount.daemon=true
+initWeekReserveCount.enable=true
+
+updateAccess_token.cron=0 */2 * * *
+updateAccess_token.class=com.kindykoo.common.task.UpdateAccessToken
+updateAccess_token.daemon=true
+updateAccess_token.enable=true
+
+notifyReserveCourseCondition.cron=50 1,13 * * *
+notifyReserveCourseCondition.class=com.kindykoo.common.task.NotifyReserveCourseCondition
+notifyReserveCourseCondition.daemon=true
+notifyReserveCourseCondition.enable=true
+
+startReserveCourse.cron=30 8 * * 1
+startReserveCourse.class=com.kindykoo.common.task.StartReserveCourse
+startReserveCourse.daemon=true
+startReserveCourse.enable=true

@@ -1,0 +1,70 @@
+#@layerFormLayout()
+#define main()
+<form id="form" class="form-horizontal" role="form" action="admin/teacher/submit" data-validator-option="{theme:'bootstrap', timely:2, stopOnError:true}">
+	<input type="hidden" value="#(teacher.id??)" name="teacher.id"/>
+	<div class="form-group">
+		<label class="control-label col-sm-2">姓名</label>
+		<div class="col-sm-6">
+			<input type="text" data-rule="required;" maxlength="30"  placeholder="请输入姓名" class="form-control" value="#(teacher.name??)" name="teacher.name" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">年龄</label>
+		<div class="col-sm-6">
+			<input type="text" data-rule="required;digits" placeholder="请输入年龄" class="form-control" value="#(teacher.age??)" name="teacher.age" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">性别</label>
+		<div class="col-sm-3">
+			<select name="teacher.sex"  class="form-control">
+				<option #((teacher!=null && teacher.sex=="男")?"selected":"") value="男">男</option>
+				<option #((teacher!=null && teacher.sex=="女")?"selected":"") value="女">女</option>
+			</select>
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">手机号</label>
+		<div class="col-sm-6">
+			<input type="text"  data-rule="required; digits; length(11)" maxlength="11" placeholder="请输入手机号" class="form-control" value="#(teacher.phone??)" name="teacher.phone" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">邮箱</label>
+		<div class="col-sm-6">
+			<input type="text" data-rule="email;" placeholder="请输入电子邮箱" class="form-control" value="#(teacher.email??)" name="teacher.email" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">入职时间</label>
+		<div class="col-sm-6">
+			<input type="text" id="entryDate" placeholder="请选择教师入职时间" class="form-control" value="#(teacher.entryDate??)" name="teacher.entryDate">
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">备注</label>
+		<div class="col-sm-6">
+			<textarea rows="2"  placeholder="请输入备注信息" class="form-control" name="teacher.remarks">#(teacher.remarks??)</textarea>
+		</div>
+	</div>
+</form>
+#end
+#define js()
+<script type="text/javascript">
+	$(function(){
+	    $('#combodate').combodate({
+	    	minYear: 2000,
+	        maxYear: 2050
+	    });    
+	});
+	
+	laydate.render({
+		  elem: '#entryDate', //指定元素
+		  value: new Date()
+	});
+	
+	function submitThisForm(){
+		$("#form").submit();
+	}
+</script>
+#end

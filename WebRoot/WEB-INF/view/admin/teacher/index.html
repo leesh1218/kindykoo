@@ -1,0 +1,265 @@
+#@innerLayout()
+#define main()
+<div id="toolbar">
+	<div class="form-inline" role="form">
+           <div class="form-group">
+           		<input placeholder="关键词查询" id="keywords" name="keywords" type="text" class="form-control" onchange="refreshThisTable()"/>
+           </div>
+           <div class="form-group">
+           		<select class="form-control" id="enable" name="enable" onchange="refreshThisTable()">
+           			<option value="">是否启用</option>
+           			<option value="true">启用</option>
+           			<option value="false">禁用</option>
+           		</select>
+           </div>
+           <button id="searchBtn" class="btn btn-primary btn-md">查询</button>
+          </div>
+      </div>
+<table id="table"
+	data-toolbar="#toolbar"
+           	data-show-refresh="true"
+            	data-show-toggle="false"
+           	data-show-columns="true"
+            	data-query-params="queryParams"></table>
+#end
+#define js()
+<script type="text/javascript">
+	var table = $('#table');
+	window.enableEvents = {
+		'click button ':function(e, value, row, index){
+			layer.confirm('确认'+(value?"禁用":"启用")+'该教师账号吗?', {icon: 3, title:'请确认'}, function(index){
+				var loadIndex = layer.load();
+				$.ajax({
+					type: "get",
+					dataType: "json",
+					url: "admin/teacher/toggleEnable/"+row.id,
+					success: function(ret){
+						if(ret.isOk){
+							layer.close(loadIndex);
+							layer.msg('操作成功！', {icon: 1, time:1000});
+							row['enable'] = !row['enable'];
+							table.bootstrapTable('updateRow', {
+								index: index,
+								row: row
+							});
+						}
+					}
+				
+				})
+			});
+			if(value){
+				
+			}else{
+				
+			}
+		}
+	};
+	window.operateEvents = {
+		'click .edit':function(e, value, row, index){
+			edit(row.id);
+		},
+		'click .remove':function(e, value, row, index){
+			layer.confirm('确认删除?', {icon: 3, title:'请确认'}, function(index){
+				var loadIndex = layer.load();
+				$.ajax({
+					type: "get",
+					dataType: "json",
+					url: "admin/teacher/delete/"+row.id,
+					success: function(ret){
+						layer.close(loadIndex);
+						if(ret.isOk){
+							layer.msg('删除成功！', {icon: 1, time:1000});
+							table.bootstrapTable('remove', {
+								field: 'id',
+								values: [row.id]
+							});
+							refreshThisTable();
+						}
+					}
+				
+				})
+			});
+		}
+	};
+	
+	function refreshThisTable(){
+		table.bootstrapTable('refresh');
+	}
+	
+	$("#searchBtn").on("click", function(){
+		refreshThisTable();
+	});
+	
+	function queryParams(params) {
+        $('#toolbar').find('input,select').each(function () {
+            params[$(this).attr('name')] = $(this).val();
+        });
+        return params;
+    }
+	
+	table.bootstrapTable({
+		pagination: true,
+		striped: true,
+		sidePagination: "server",
+		url: "admin/teacher/list",
+		height:550,
+		pageList:[5, 10, 15, 20, 30, 50],
+	    columns: [{
+	        field: 'index',
+	        title: '编号',
+               align: 'center'	,
+               formatter: indexFormatter
+	    }, {
+	        field: 'name',
+	        title: '姓名',
+               align: 'center'
+	    },{
+	        field: 'sex',
+	        title: '性别',
+               align: 'center'
+	    },{
+	        field: 'age',
+	        title: '年龄',
+               align: 'center'
+	    },{
+	        field: 'phone',
+	        title: '手机',
+               align: 'center',
+               editable: {
+            	   type: "text",
+            	   maxlength:"11",
+            	   validate:function(v){
+            		   if(!($.trim(v))) return "联系人电话不能为空";
+            		   if(v.length > 11) return "联系人电话不能超过11位";
+            	   }
+               }
+	    },{
+	        field: 'email',
+	        title: '邮箱',
+               align: 'center',
+	    },{
+	        field: 'entryDate',
+	        title: '入职时间',
+               align: 'center',
+               editable: {
+            	   type: "combodate",
+            	   format: 'YYYY-MM-DD',    
+                   viewformat: 'YYYY-MM-DD',    
+                   template: 'YYYY 年 MM 月 DD 日',   
+                   combodate: {
+                           minYear: 2000,
+                           maxYear: 2050,
+                           minuteStep: 1
+                   }
+               }
+	    },{
+	        field: 'remarks',
+	        title: '备注',
+               align: 'center'
+	    },{
+	        field: 'enable',
+	        title: '是否启用',
+               align: 'center',
+               events: enableEvents,
+               formatter: enableFormatter
+	    }, { 
+               field: 'operate',
+               title: '操作',
+               align: 'center',
+               events: operateEvents,
+               formatter: operateFormatter
+           }],
+           onResetView: function(){
+        	   $("[data-toggle='tooltip']").tooltip();
+        	   $("#addBtn").parent().find("[title]").tooltip();
+           },
+           onEditableSave: function(field, row, oldValue, el){
+        	   table.bootstrapTable('resetView');
+        	   var loadIndex = layer.load();
+        	   var teacher = {
+        			   "teacher.id": row.id,
+        			   "teacher.phone": row.phone,
+        			   "teacher.entryDate": row.entryDate
+        	   };
+        	   $.ajax({
+					type: "post",
+					dataType: "json",
+					url: "admin/teacher/save",
+					data: teacher,
+					success: function(ret){
+						layer.close(loadIndex);
+						if(ret.isOk){
+							layer.msg('更新成功！', {icon: 1, time:1000});
+						}else{
+							layer.msg('更新失败！', {icon: 5, time:1000});
+						}
+					}
+				
+				})
+           }
+	});
+	
+	function enableFormatter(value, row, index) {
+		var btn;
+		if(value){
+			btn = '<button data-toggle="tooltip" class="btn btn-success btn-xs" data-placement="left" title="点击禁用该教师账号"><span  class="glyphicon glyphicon-eye-close "></span></button>';
+		}else{
+			btn = '<button data-toggle="tooltip" class="btn btn-danger btn-xs" data-placement="left" title="点击启用该教师账号"><span  class="glyphicon glyphicon-eye-open "></span></button>';
+		}
+        return [btn].join('');
+    }
+	
+	function indexFormatter(value, row, index) {
+		var pageNumber = table.bootstrapTable('getOptions').pageNumber;  
+        var pageSize = table.bootstrapTable('getOptions').pageSize;  
+        return [(pageNumber-1) * pageSize+index+1].join('');
+    }
+	
+	function operateFormatter(value, row, index) {
+        return [
+            '<button data-toggle="tooltip" class="btn btn-success btn-xs edit" title="编辑">',
+            '<i class="glyphicon glyphicon-pencil"></i>',
+            '</button>  ',
+            '<button data-toggle="tooltip" class="btn btn-danger btn-xs remove" title="删除">',
+            '<i class="glyphicon glyphicon-remove"></i>',
+            '</button>'
+        ].join('');
+    }
+	
+	setTimeout(function(){
+		table.bootstrapTable('resetView');
+	}, 100);
+	
+	$(".columns.columns-right.btn-group.pull-right").prepend("<button data-toggle='tooltip' id='addBtn' class='btn btn-primary btn-md' title='新增'><i class='glyphicon glyphicon-plus'></i></button>");
+	
+	function edit(id){
+		layer.open({
+			  type:2,
+			  title: (id==null || id<=0)?'新增':'修改',
+			  maxmin: true,
+			  area:['768px','620px'],
+			  btn:['确定','取消'],
+			  content: 'admin/teacher/edit/'+id,
+			  yes: function(index, layero){
+				  var iframeName = layero.find("iframe")[0]['name'];
+				  var iframeWindow = window[iframeName];
+				  iframeWindow.submitThisForm();
+			  }
+			});
+	}
+	
+	$("#addBtn").on("click", function(){
+		edit(0);
+	});
+	
+	$(".form-inline").append("<button data-toggle='tooltip' id='resetBtn' class='btn btn-info btn-md'>显示全部</button>");
+	
+	$("#resetBtn").on("click", function(){
+		$("#keywords").val("");
+		$("#enable").val("");
+		refreshThisTable();
+	});
+	
+	
+</script>
+#end

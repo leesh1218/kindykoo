@@ -1,0 +1,373 @@
+#@layerFormLayout()
+#define main()
+<form id="form" class="form-horizontal" role="form" action="admin/student/submit" data-validator-option="{theme:'bootstrap', timely:2, stopOnError:true}">
+	<input type="hidden" value="#(student.id??)" name="student.id"/>
+	<input type="hidden" value="#(student.useCourseCount??)" name="student.useCourseCount"/>
+	<input type="hidden" value="#(student.age??)" name="student.age"/>
+	<input type="hidden" value="#(student.phone??)" name="oldPhone"/>
+	<input type="hidden" value="#(student.birthday??)" name="oldBirthday"/>
+	<div class="form-group">
+		<label class="control-label col-sm-2">用户类别</label>
+		<div class="col-sm-3">
+			<select name="student.mainUserFlag" id="mainUserFlag" #(student!=null?"disabled='disabled'":"")  class="form-control">
+				<option #((student!=null && student.mainUserFlag=="主用户")?"selected":"") value="主用户">主用户</option>
+				<option #((student!=null && student.mainUserFlag=="子用户")?"selected":"") value="子用户">子用户</option>
+			</select>
+		</div>
+	</div>
+	<div class="form-group" id="div_mainUserName">
+		<label class="control-label col-sm-2">主会员姓名</label>
+		<div class="col-sm-6">
+			<input type="text" data-rule="" onblur="checkMainUserName()" maxlength="30" id="mainUserName" #(student!=null?"readonly='readonly'":"") placeholder="请输入关联主会员姓名" class="form-control" value="#(student.mainUserName??)" name="student.mainUserName" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">姓名</label>
+		<div class="col-sm-6">
+			<input type="text" data-rule="required;" id="name" maxlength="30" #(student!=null?"readonly='readonly'":"")  placeholder="请输入学员姓名" class="form-control" value="#(student.name??)" name="student.name" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">小名</label>
+		<div class="col-sm-6">
+			<input type="text" maxlength="30"  placeholder="请输入学员小名" class="form-control" value="#(student.nickName??)" name="student.nickName" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">生日</label>
+		<div class="col-sm-6">
+			<input type="text" id="birthday" data-rule="required;" placeholder="请选择学员生日" class="form-control" value="#(student.birthday??)" name="student.birthday">
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">性别</label>
+		<div class="col-sm-3">
+			<select name="student.sex"  class="form-control" #(student!=null?"readonly='readonly'":"")>
+				<option #((student!=null && student.sex=="男")?"selected":"") value="男">男</option>
+				<option #((student!=null && student.sex=="女")?"selected":"") value="女">女</option>
+			</select>
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">联系人</label>
+		<div class="col-sm-6">
+			<input type="text" data-rule="required;" maxlength="10" placeholder="请输入家长姓名" class="form-control" value="#(student.contact??)" name="student.contact" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">手机号</label>
+		<div class="col-sm-6">
+			<input type="text"  data-rule="required; digits;length(11)" maxlength="11" placeholder="请输入家长手机号" class="form-control" value="#(student.phone??)" name="student.phone" />
+		</div>
+	</div>
+	<div class="form-group" id="email">
+		<label class="control-label col-sm-2">邮箱</label>
+		<div class="col-sm-6">
+			<input type="text" data-rule="email;" placeholder="请输入家长电子邮箱(非必输)" class="form-control" value="#(student.email??)" name="student.email" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">与学员的关系</label>
+		<div class="col-sm-3">
+			<select name="student.relationship" class="form-control">
+				<option #((student!=null && student.relationship=="其他")?"selected":"") value="其他">其他</option>
+				<option #((student!=null && student.relationship=="爸爸")?"selected":"") value="爸爸">爸爸</option>
+				<option #((student!=null && student.relationship=="妈妈")?"selected":"") value="妈妈">妈妈</option>
+				<option #((student!=null && student.relationship=="爷爷")?"selected":"") value="爷爷">爷爷</option>
+				<option #((student!=null && student.relationship=="奶奶")?"selected":"") value="奶奶">奶奶</option>
+				<option #((student!=null && student.relationship=="姥爷")?"selected":"") value="姥爷">姥爷</option>
+				<option #((student!=null && student.relationship=="姥姥")?"selected":"") value="姥姥">姥姥</option>
+			</select>
+		</div>
+	</div>
+	<div class="form-group" id="div_vipCardNo">
+		<label class="control-label col-sm-2">会员卡号</label>
+		<div class="col-sm-6">
+			<input type="text" data-rule="" id="vipCardNo"  maxlength="9" #(student!=null?"readonly='readonly'":"") placeholder="请输入会员卡号" class="form-control" value="#(student.vipCardNo??)" name="student.vipCardNo" />
+		</div>
+	</div>
+	<div class="form-group" id="div_vipType">
+		<label class="control-label col-sm-2">会员类型</label>
+		<div class="col-sm-3">
+			<select name="student.vipType" id="vipType"  class="form-control">
+				<option value="">--请选择--</option>
+				<option #((student!=null && student.vipType=="半年卡")?"selected":"") value="半年卡">半年卡</option>
+				<option #((student!=null && student.vipType=="年卡")?"selected":"") value="年卡">年卡</option>
+				<option #((student!=null && student.vipType=="一年半卡")?"selected":"") value="一年半卡">一年半卡</option>
+				<option #((student!=null && student.vipType=="两年卡")?"selected":"") value="两年卡">两年卡</option>
+				<option #((student!=null && student.vipType=="课时卡")?"selected":"") value="课时卡">课时卡</option>
+			</select>
+		</div>
+	</div>
+	<div class="form-group" id="vipCourseCount">
+		<label class="control-label col-sm-2">合约课时</label>
+		<div class="col-sm-6">
+			<input type="text" data-rule="" placeholder="请输入合约课时" class="form-control" value="#(student.vipCourseCount??)" name="student.vipCourseCount" />
+		</div>
+	</div>
+	<div class="form-group" id="presentCourseCount">
+		<label class="control-label col-sm-2">赠送课时</label>
+		<div class="col-sm-6">
+			<input type="text" data-rule="" placeholder="请输入赠送课时" class="form-control" value="#(student.presentCourseCount??)" name="student.presentCourseCount" />
+		</div>
+	</div>
+	<div class="form-group" id="div_beginDate">
+		<label class="control-label col-sm-2">开始时间</label>
+		<div class="col-sm-6">
+			<input type="text" id="beginDate" data-rule="" placeholder="请选择会员卡开始时间" class="form-control" value="#(student.beginDate??)" name="student.beginDate">
+		</div>
+	</div>
+	<div class="form-group" id="div_endDate">
+		<label class="control-label col-sm-2">到期时间</label>
+		<div class="col-sm-6">
+			<input type="text" id="endDate" data-rule="" placeholder="请选择会员卡到期时间" class="form-control" value="#(student.endDate??)" name="student.endDate">
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">备注</label>
+		<div class="col-sm-6">
+			<textarea rows="2"  placeholder="请输入备注信息" class="form-control" name="student.remarks">#(student.remarks??)</textarea>
+		</div>
+	</div>
+</form>
+#end
+#define js()
+<script type="text/javascript">
+
+	function checkMainUserName(){
+		var mainUserName = $("#mainUserName").val();
+		//alert(mainUserName);
+		//var loadIndex = layer.load();
+		$.ajax({
+			type: "post",
+			dataType: "json",
+			url: "admin/student/checkMainUserName",
+			data: {
+				mainUserName: mainUserName
+			},
+			success: function(ret){
+				//layer.close(loadIndex);
+				if(!ret.isOk){
+					layer.msg(ret.infoMsg, {icon: 5, time:2000});
+					$("#mainUserName").val('');
+					$("#mainUserName").focus();
+				}else{
+					layer.msg('主用户存在，请继续输入', {icon: 1, time:2000});
+					$("#vipType").val(ret.vipType);
+					$("#name").focus();
+				}
+			}
+		})
+	}
+
+	$(function(){ 
+		$("#email").hide();
+		if($("#mainUserFlag").val()=="主用户"){
+			$("#div_mainUserName").hide();
+			$("#mainUserName").val('');
+			$("#div_vipCardNo").show();
+		   	$("#div_vipType").show();
+		    $("#div_beginDate").show();
+		    $("#div_endDate").show();
+		    /* $("#vipType").attr("data-rule","required;");
+		    $("#vipCardNo").attr("data-rule","required;digits;");
+		    $("#beginDate").attr("data-rule","required;");
+		    $("#endDate").attr("data-rule","required;");
+		    $("#mainUserName").removeAttr("data-rule"); */
+		}else{
+			$("#div_mainUserName").show();
+			$("#div_vipCardNo").hide();
+		   	$("#div_vipType").hide();
+		    $("#div_beginDate").hide();
+		    $("#div_endDate").hide();
+		    $("#vipCardNo").val('');
+	    	$("#vipType").val('');
+	    	$("#beginDate").val('');
+	    	$("#endDate").val('');
+	    	/* $("#vipType").removeAttr("data-rule");
+			$("#vipCardNo").removeAttr("data-rule");
+			$("#beginDate").removeAttr("data-rule");
+			$("#endDate").removeAttr("data-rule");
+	    	$("#mainUserName").attr("data-rule","required;"); */
+		}
+		if($("#vipType").val()=="课时卡"){
+			$("#vipCourseCount").show();
+			$("#presentCourseCount").show();
+			/* $("#vipCourseCount").attr("data-rule","required;digits;");
+			$("#presentCourseCount").attr("data-rule","required;digits;"); */
+		}else{
+			$("#vipCourseCount").hide();
+			$("#presentCourseCount").hide();
+			$("#vipCourseCount").val('');
+			$("#presentCourseCount").val('');
+			/* $("#vipCourseCount").removeAttr("data-rule");
+			$("#presentCourseCount").removeAttr("data-rule"); */
+		}
+	});
+	
+	$("#mainUserFlag").bind("change",function () {  
+	    if (this.value=="主用户")  {
+	    	$("#div_mainUserName").hide();
+	    	$("#mainUserName").val('');
+		    $("#div_vipCardNo").show();
+	    	$("#div_vipType").show();
+	    	$("#div_beginDate").show();
+	    	$("#div_endDate").show();
+	    	/* $("#vipType").attr("data-rule","required;");
+		    $("#vipCardNo").attr("data-rule","required;digits;");
+		    $("#beginDate").attr("data-rule","required;");
+		    $("#endDate").attr("data-rule","required;");
+		    $("#mainUserName").removeAttr("data-rule"); */
+	    }else{
+	    	$("#div_mainUserName").show();
+	    	$("#div_vipCardNo").hide();
+	    	$("#div_vipType").hide();
+	    	$("#div_beginDate").hide();
+	    	$("#div_endDate").hide();
+	    	$("#vipCardNo").val('');
+	    	$("#vipType").val('');
+	    	$("#beginDate").val('');
+	    	$("#endDate").val('');
+	    	/* $("#vipType").removeAttr("data-rule");
+			$("#vipCardNo").removeAttr("data-rule");
+			$("#beginDate").removeAttr("data-rule");
+			$("#endDate").removeAttr("data-rule");
+	    	$("#mainUserName").attr("data-rule","required;"); */
+		}
+	    if($("#vipType").val()=="课时卡"){
+			$("#vipCourseCount").show();
+			$("#presentCourseCount").show();
+			/* $("#vipCourseCount").attr("data-rule","required;digits;");
+			$("#presentCourseCount").attr("data-rule","required;digits;"); */
+		}else{
+			$("#vipCourseCount").hide();
+			$("#presentCourseCount").hide();
+			$("#vipCourseCount").val('');
+			$("#presentCourseCount").val('');
+			/* $("#vipCourseCount").removeAttr("data-rule");
+			$("#presentCourseCount").removeAttr("data-rule"); */
+		}
+	 });
+	
+	function beginDateChange() { 
+		var beginDate = $("#beginDate").val();
+		var date = StringToDate(beginDate);
+		var vipType = $("#vipType").val();
+		var endDate;
+		if(vipType== "半年卡"){
+			endDate = date.DateAdd('m',6);
+			$("#endDate").val(endDate.format("yyyy-MM-dd"));
+		}
+		if(vipType== "年卡"){
+			endDate = date.DateAdd('y',1);
+			$("#endDate").val(endDate.format("yyyy-MM-dd"));
+		}
+		if(vipType== "两年卡"){
+			endDate = date.DateAdd('y',2);
+			$("#endDate").val(endDate.format("yyyy-MM-dd"));
+		}
+		if(vipType== "课时卡"){
+			endDate = date.DateAdd('y',1);
+			$("#endDate").val(endDate.format("yyyy-MM-dd"));
+		}
+	}
+	
+	function StringToDate(DateStr)  {   
+	    var converted = Date.parse(DateStr);  
+	    var myDate = new Date(converted);  
+	    if (isNaN(myDate))  
+	    {   
+	        var arys= DateStr.split('-');  
+	        myDate = new Date(arys[0],--arys[1],arys[2]);  
+	    }  
+	    return myDate;  
+	} 
+	
+	$("#vipType").bind("change",function () {
+		if(this.value== ""){
+			$("#beginDate").val('');
+			$("#endDate").val('');
+			return;
+		}
+		var date = new Date();
+		$("#beginDate").val(date.format("yyyy-MM-dd"));
+		var endDate;
+	    if(this.value== "课时卡"){
+			$("#vipCourseCount").show();
+			$("#presentCourseCount").show();
+			if(this.value== "课时卡"){
+				endDate = date.DateAdd('y',1);
+				$("#endDate").val(endDate.format("yyyy-MM-dd"));
+			}
+		}else{
+			$("#vipCourseCount").hide();
+			$("#presentCourseCount").hide();
+			$("#vipCourseCount").val('');
+			$("#presentCourseCount").val('');
+			if(this.value== "半年卡"){
+				endDate = date.DateAdd('m',6);
+				$("#endDate").val(endDate.format("yyyy-MM-dd"));
+			}
+			if(this.value== "年卡"){
+				endDate = date.DateAdd('y',1);
+				$("#endDate").val(endDate.format("yyyy-MM-dd"));
+			}
+			if(this.value== "两年卡"){
+				endDate = date.DateAdd('y',2);
+				$("#endDate").val(endDate.format("yyyy-MM-dd"));
+			}
+		}
+	 });
+	
+	Date.prototype.format = function(fmt) { 
+	     var o = { 
+	        "M+" : this.getMonth()+1,                 //月份 
+	        "d+" : this.getDate(),                    //日 
+	        "h+" : this.getHours(),                   //小时 
+	        "m+" : this.getMinutes(),                 //分 
+	        "s+" : this.getSeconds(),                 //秒 
+	        "q+" : Math.floor((this.getMonth()+3)/3), //季度 
+	        "S"  : this.getMilliseconds()             //毫秒 
+	    }; 
+	    if(/(y+)/.test(fmt)) {
+	            fmt=fmt.replace(RegExp.$1, (this.getFullYear()+"").substr(4 - RegExp.$1.length)); 
+	    }
+	     for(var k in o) {
+	        if(new RegExp("("+ k +")").test(fmt)){
+	             fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));
+	         }
+	     }
+	    return fmt; 
+	}
+	
+	Date.prototype.DateAdd = function(strInterval, Number) {   
+	    var dtTmp = this;  
+	    switch (strInterval) {   
+	        case 's' :return new Date(Date.parse(dtTmp) + (1000 * Number));  
+	        case 'n' :return new Date(Date.parse(dtTmp) + (60000 * Number));  
+	        case 'h' :return new Date(Date.parse(dtTmp) + (3600000 * Number));  
+	        case 'd' :return new Date(Date.parse(dtTmp) + (86400000 * Number));  
+	        case 'w' :return new Date(Date.parse(dtTmp) + ((86400000 * 7) * Number));  
+	        case 'q' :return new Date(dtTmp.getFullYear(), (dtTmp.getMonth()) + Number*3, dtTmp.getDate(), dtTmp.getHours(), dtTmp.getMinutes(), dtTmp.getSeconds());  
+	        case 'm' :return new Date(dtTmp.getFullYear(), (dtTmp.getMonth()) + Number, dtTmp.getDate(), dtTmp.getHours(), dtTmp.getMinutes(), dtTmp.getSeconds());  
+	        case 'y' :return new Date((dtTmp.getFullYear() + Number), dtTmp.getMonth(), dtTmp.getDate(), dtTmp.getHours(), dtTmp.getMinutes(), dtTmp.getSeconds());  
+	    }  
+	} 
+	 
+	laydate.render({
+		  elem: '#birthday' //指定元素
+	});
+	
+	laydate.render({
+		  elem: '#beginDate' //指定元素
+	});
+	
+	laydate.render({
+		  elem: '#endDate'//指定元素
+	});
+	
+	function submitThisForm(){
+		$("#form").submit();
+	}
+</script>
+#end
