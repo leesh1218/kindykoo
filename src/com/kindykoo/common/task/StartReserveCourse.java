@@ -16,7 +16,9 @@ public class StartReserveCourse  implements Runnable {
 	@Override
 	public void run() {
 		String info = "";
-		int weekCount = ToolClass.getWeekCount(new Date());
+//		int weekCount = ToolClass.getWeekCount(new Date());
+		Paras tmpparas = parasService.selectMember("currentWeekCount");
+		int weekCount = Integer.parseInt(tmpparas.getValue());
 		Paras paras = parasService.selectMember("maxReserveWeekCount");
 		int maxWeekCount = Integer.parseInt(paras.getValue());
 		

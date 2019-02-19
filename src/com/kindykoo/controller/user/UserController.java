@@ -1,5 +1,6 @@
 package com.kindykoo.controller.user;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -55,16 +56,25 @@ public class UserController extends Controller {
 	 */
 	public void initData(){
 		Paras paras1 = parasService.selectMember("minReserveWeekCount");
-		int index_weekCount = ToolClass.getWeekCount(new Date())-Integer.parseInt(paras1.getValue());
+		Paras tmpparas = parasService.selectMember("currentWeekCount");
+		int weekCount = Integer.parseInt(tmpparas.getValue());
+		int index_weekCount = weekCount-Integer.parseInt(paras1.getValue());
 		if(index_weekCount == -1){
 			index_weekCount = 0;
 		}
 		String week = ToolClass.getWeekOfDate(new Date());
 		String[] weeksub = Arrays.copyOfRange(ToolClass.weeks, ToolClass.getIndex(ToolClass.weeks, week), 7);
 		Date date = new Date();
+		SimpleDateFormat tmpsdf = new SimpleDateFormat("yyyy-MM-dd");
+		Paras tmpparasDate = parasService.selectMember("currentDate");
+		try {
+			date = tmpsdf.parse(tmpparasDate.getValue());
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		for (int i = 0; i < weeksub.length; i++) {
-			Date date1 = ToolClass.getDate(date, ToolClass.getWeekCount(date), ToolClass.getIndex(ToolClass.weeks, weeksub[i]));
+			Date date1 = ToolClass.getDate(date, weekCount, ToolClass.getIndex(ToolClass.weeks, weeksub[i]));
 			weeksub[i] = weeksub[i]+"("+sdf.format(date1)+")";
 		}
 		setAttr("index_weekCount", index_weekCount);
@@ -305,17 +315,27 @@ public class UserController extends Controller {
 		setAttr("rdSessionKey", rsession);
 		setAttr("isOK", true);
 
+		Paras tmpparas = parasService.selectMember("currentWeekCount");
+		int weekCount = Integer.parseInt(tmpparas.getValue());
+		
 		Paras paras1 = parasService.selectMember("minReserveWeekCount");
-		int index_weekCount = ToolClass.getWeekCount(new Date())-Integer.parseInt(paras1.getValue());
+		int index_weekCount = weekCount-Integer.parseInt(paras1.getValue());
 		if(index_weekCount == -1){
 			index_weekCount = 0;
 		}
 		String week = ToolClass.getWeekOfDate(new Date());
 		String[] weeksub = Arrays.copyOfRange(ToolClass.weeks, ToolClass.getIndex(ToolClass.weeks, week), 7);
 		Date date = new Date();
+		SimpleDateFormat tmpsdf = new SimpleDateFormat("yyyy-MM-dd");
+		Paras tmpparasDate = parasService.selectMember("currentDate");
+		try {
+			date = tmpsdf.parse(tmpparasDate.getValue());
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		for (int i = 0; i < weeksub.length; i++) {
-			Date date1 = ToolClass.getDate(date, ToolClass.getWeekCount(date), ToolClass.getIndex(ToolClass.weeks, weeksub[i]));
+			Date date1 = ToolClass.getDate(date, weekCount, ToolClass.getIndex(ToolClass.weeks, weeksub[i]));
 			weeksub[i] = weeksub[i]+"("+sdf.format(date1)+")";
 		}
 		setAttr("index_weekCount", index_weekCount);

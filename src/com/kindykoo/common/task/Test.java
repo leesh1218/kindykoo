@@ -1,5 +1,6 @@
 package com.kindykoo.common.task;
 
+import com.kindykoo.common.model.Paras;
 import com.kindykoo.controller.reserveCourse.ReserveCourseService;
 import com.kindykoo.controller.student.StudentService;
 
@@ -46,7 +47,8 @@ public class Test {
 //		Db.batchUpdate(list2, list2.size());
 //		System.out.println("总会员数："+list.size()+" 更新手机号  "+list2.size()+" 条记录");
 //		String info = "";
-//		int weekCount = ToolClass.getWeekCount(new Date());
+//		Paras tmpparas = parasService.selectMember("currentWeekCount");
+//		int weekCount = Integer.parseInt(tmpparas.getValue());
 //		String status = "已预约";
 //		List<ReserveCourse> reserveCourses = reserveCourseService.getStudentNameByWeekCount( status, weekCount);
 //		List<Student> students = new ArrayList<>();

@@ -41,6 +41,23 @@ public class ToolClass {
 		return calendar.get(Calendar.WEEK_OF_YEAR); 
 	}
 	
+//	public static void main(String[] args) {
+//		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+//		Calendar calendar = Calendar.getInstance();
+//		calendar.setFirstDayOfWeek(Calendar.MONDAY);  
+//		calendar.add(Calendar.DATE, 20);
+//		//更新本阶段第一周第一天的日期
+//		System.out.println(sdf.format(calendar.getTime()));
+//		Date date1;
+//		try {
+//			date1 = ToolClass.getDate(sdf.parse(sdf.format(calendar.getTime())), 2, 6);
+//			System.out.println(sdf.format(date1));
+//		} catch (ParseException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//	}
+	
 	/**
 	 * 将月份年龄转换为"2岁3个月"格式
 	 * @param age
@@ -84,6 +101,19 @@ public class ToolClass {
 		calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
 		calendar.add(Calendar.DATE, week);
 		return calendar.getTime();
+	}
+	
+	/**
+	 * 比较日期是否是同一天
+	 */
+	public static boolean compareDate(Date date1, Date date2) {
+		Calendar calendar1=Calendar.getInstance(Locale.CHINA);
+		calendar1.setFirstDayOfWeek(Calendar.MONDAY);
+		calendar1.setTimeInMillis(date1.getTime());
+		Calendar calendar2=Calendar.getInstance(Locale.CHINA);
+		calendar2.setFirstDayOfWeek(Calendar.MONDAY);
+		calendar2.setTimeInMillis(date1.getTime());
+		return (calendar1.get(Calendar.DATE) == calendar2.get(Calendar.DATE)) && (calendar1.get(Calendar.MONTH) == calendar2.get(Calendar.MONTH)) && (calendar1.get(Calendar.YEAR) == calendar2.get(Calendar.YEAR));
 	}
 	
 	/**

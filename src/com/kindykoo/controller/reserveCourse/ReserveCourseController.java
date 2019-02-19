@@ -146,7 +146,9 @@ public class ReserveCourseController extends Controller {
 		String babyName = getPara("babyName");
 		String phone = getPara("phone");
 		String id = getPara("id");
-		int weekCount = ToolClass.getWeekCount(new Date());
+//		int weekCount = ToolClass.getWeekCount(new Date());
+		Paras tmpparas = parasService.selectMember("currentWeekCount");
+		int weekCount = Integer.parseInt(tmpparas.getValue());
 //		if(weekCount == 26){
 //			weekCount++;
 //		}
@@ -195,7 +197,9 @@ public class ReserveCourseController extends Controller {
 		}
 //		courseTable.setStatus(status);
 		Date date = new Date();
-		courseTable.setWeekCount(ToolClass.getWeekCount(date));
+		Paras tmpparas = parasService.selectMember("currentWeekCount");
+		int weekCount = Integer.parseInt(tmpparas.getValue());
+		courseTable.setWeekCount(weekCount);
 		courseTable.setWeek(ToolClass.getWeekOfDate(date));
 		int i = 0;
 		String currentId = "";
@@ -432,7 +436,10 @@ public class ReserveCourseController extends Controller {
 //					}
 		}
 		
-		if(reserveCourse.getWeekCount() == ToolClass.getWeekCount(new Date())){
+		Paras tmpparas = parasService.selectMember("currentWeekCount");
+		int weekCount = Integer.parseInt(tmpparas.getValue());
+		
+		if(reserveCourse.getWeekCount() == weekCount){
 			if(subStudent!=null){
 				if(!"课时卡".equals(students.getVipType()) && subStudent.getWeekReserveCount() == subStudent.getWeekMaxCount()){
 					subStudent.setEnable(true);
@@ -626,7 +633,9 @@ public class ReserveCourseController extends Controller {
 			return;
 		}
 //		String babyName = users.getBabyName();
-		int weekCount = ToolClass.getWeekCount(new Date());
+//		int weekCount = ToolClass.getWeekCount(new Date());
+		Paras tmpparas = parasService.selectMember("currentWeekCount");
+		int weekCount = Integer.parseInt(tmpparas.getValue());
 //		if(weekCount == 26){
 //			weekCount++;
 //		}
@@ -960,6 +969,39 @@ public class ReserveCourseController extends Controller {
 		renderJson();
 	}
 	
+	/**
+	 * 导出查课记录
+	 */
+	public void export2(){
+		String babyName = getPara("babyName");
+		
+		List<HashMap<String, Object>> data = service.selectMember2(babyName);
+		if(data == null || data.size()==0){
+			setAttr("isOK", false);
+			setAttr("infoMsg", "没有记录！");
+			renderJson();
+			return;
+		}
+		String[] title ={"编号","会员姓名","课程编号","周数","星期","上课日期","时间段","课程","主教","助教","操作人","预约类型","预约时间","请假时间","确认时间","是否上课","约课状态"};
+		String[] field ={"id","studentName","courseTableID","weekCount","week","date","courseTime","course","teacher1","teacher2","operator","reserveType","reserveTime","enableTime","confirmTime","present","status"};
+		String fileName = "ReserveCourse-babyName.xls";
+		String path = getSession().getServletContext().getRealPath("/")+"export/";
+		pathName = path+fileName;
+		File file = new File(pathName);
+		
+		boolean res = ExcelUtil.exportData(title, field, data, file);
+		if(!res){
+			setAttr("isOK", false);
+			setAttr("infoMsg", "导出失败！");
+			renderJson();
+			return;
+		}
+		setAttr("isOK", true);
+		setAttr("path", ToolClass.BATHPATH+ToolClass.EXPORTPATH+fileName);
+		setAttr("times", data.size());
+		renderJson();
+	}
+	
 	public void download(){
 		setAttr("path", pathName);
 		render("../common/download.html");
@@ -1070,7 +1112,7 @@ public class ReserveCourseController extends Controller {
 		Calendar calendar=Calendar.getInstance(Locale.CHINA);
 		calendar.setTime(students.getEndDate());
 		if("reserveAndFixed".equals(flag)) {
-			counts = maxReserveWeekCount-ToolClass.getWeekCount(new Date());
+			counts = maxReserveWeekCount-weekCount;
 			if(counts < 0) {
 				setAttr("isOK", false);
 				setAttr("infoMsg", "系统参数有误，请联系前台老师！");

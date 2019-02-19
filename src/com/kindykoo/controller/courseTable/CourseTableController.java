@@ -6,9 +6,11 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -196,10 +198,18 @@ public class CourseTableController extends Controller {
 		courseTable.setWeekCount(inWeekCount);
 		List<CourseTable> courseTables = service.selectMember(courseTable,"copy");
 		int times = 0;
+		Date date = new Date();
+		SimpleDateFormat tmpsdf = new SimpleDateFormat("yyyy-MM-dd");
+		Paras tmpparasDate = parasService.selectMember("currentDate");
+		try {
+			date = tmpsdf.parse(tmpparasDate.getValue());
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
 		for (CourseTable courseTable2 : courseTables) {
 			courseTable2.setWeekCount(outWeekCount);
 			int weekIndex = ToolClass.getIndex(weeks, courseTable2.getWeek());
-			courseTable2.setDate(ToolClass.getDateAndTime(ToolClass.getDate(new Date(),courseTable2.getWeekCount(),weekIndex), courseTable2.getBeginTime()));
+			courseTable2.setDate(ToolClass.getDateAndTime(ToolClass.getDate(date,courseTable2.getWeekCount(),weekIndex), courseTable2.getBeginTime()));
 			courseTable2.setId(0);
 			courseTable2.setUpdateTime(new Date());
 			courseTable2.setStatus("未上课");
@@ -225,11 +235,20 @@ public class CourseTableController extends Controller {
 			index_courseTime = Integer.parseInt(str_index_courseTime);
 		}
 		Date date = new Date();
-		int weekCount = ToolClass.getWeekCount(date);
+		SimpleDateFormat tmpsdf = new SimpleDateFormat("yyyy-MM-dd");
+		Paras tmpparasDate = parasService.selectMember("currentDate");
+		try {
+			date = tmpsdf.parse(tmpparasDate.getValue());
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+//		int weekCount = ToolClass.getWeekCount(date);
+		Paras tmpparas = parasService.selectMember("currentWeekCount");
+		int weekCount = Integer.parseInt(tmpparas.getValue());
 //		if(weekCount == 26){
 //			weekCount++;
 //		}
-		String week = ToolClass.getWeekOfDate(date);
+		String week = ToolClass.getWeekOfDate(new Date());
 		String[] weeksub = Arrays.copyOfRange(weeks, ToolClass.getIndex(weeks, week), 7);
 		String operator = getPara("operator");
 		String babyName = getPara("babyName");
@@ -263,12 +282,13 @@ public class CourseTableController extends Controller {
 		int i = 0;
 		if(CourseTimeLists!=null && CourseTimeLists.size()>0){
 			for (CourseTable CourseTimeList : CourseTimeLists) {
-				Date date2 = ToolClass.getDateAndTime(date, CourseTimeList.getBeginTime());
+				Date date2 = ToolClass.getDateAndTime(new Date(), CourseTimeList.getBeginTime());
 				//Date date2 = CourseTimeList.getDate();
 				Date date1 = null;
 				if("time".equals(qryType)){
-					date1 = ToolClass.getDate(date,ToolClass.getWeekCount(date), ToolClass.getIndex(weeks, week1));
-					if(date1.after(date) || (date1.compareTo(date) ==0  &&  date2.after(date))){
+					date1 = ToolClass.getDate(date,weekCount, ToolClass.getIndex(weeks, week1));
+					Calendar cal = Calendar.getInstance();
+					if(date1.after(new Date()) || (ToolClass.compareDate(date1, new Date())  &&  date2.after(new Date()))){
 						courseTableList = new CourseTableList();
 						//设置值
 						courseTableList.setId(i+"");
@@ -299,7 +319,7 @@ public class CourseTableController extends Controller {
 							//if("time".equals(qryType)){
 								courseList.setPara(courseTable.getCourse()+"("+courseTable.getTeacher1()+","+courseTable.getTeacher2()+")");
 								SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-								Date date3 = ToolClass.getDate(date, ToolClass.getWeekCount(date), ToolClass.getIndex(weeks, courseTable.getWeek()));
+								Date date3 = ToolClass.getDate(date, weekCount, ToolClass.getIndex(weeks, courseTable.getWeek()));
 								String time = courseTable.getWeek()+"("+sdf.format(date3)+")";
 								courseList.setTime(time);
 							//}
@@ -357,7 +377,7 @@ public class CourseTableController extends Controller {
 			//星期数据
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 			for (int j = 0; j < weeksub.length; j++) {
-				Date date1 = ToolClass.getDate(date, ToolClass.getWeekCount(date), ToolClass.getIndex(weeks, weeksub[j]));
+				Date date1 = ToolClass.getDate(date, weekCount, ToolClass.getIndex(weeks, weeksub[j]));
 				weeksub[j] = weeksub[j]+"("+sdf.format(date1)+")";
 			}
 			setAttr("isOK", true);
@@ -368,7 +388,7 @@ public class CourseTableController extends Controller {
 		//星期数据
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		for (int j = 0; j < weeksub.length; j++) {
-			Date date1 = ToolClass.getDate(date, ToolClass.getWeekCount(date), ToolClass.getIndex(weeks, weeksub[j]));
+			Date date1 = ToolClass.getDate(date, weekCount, ToolClass.getIndex(weeks, weeksub[j]));
 			weeksub[j] = weeksub[j]+"("+sdf.format(date1)+")";
 		}
 		setAttr("isOK", true);
@@ -451,8 +471,16 @@ public class CourseTableController extends Controller {
 		Paras paras1 = parasService.selectMember("minReserveWeekCount");
 		courseTable.setWeekCount(Integer.parseInt(paras1.getValue())+courseTable.getWeekCount()-1);
 		
+		Date date = new Date();
+		SimpleDateFormat tmpsdf = new SimpleDateFormat("yyyy-MM-dd");
+		Paras tmpparasDate = parasService.selectMember("currentDate");
+		try {
+			date = tmpsdf.parse(tmpparasDate.getValue());
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
 		int weekIndex = ToolClass.getIndex(weeks, courseTable.getWeek());
-		courseTable.setDate(ToolClass.getDateAndTime(ToolClass.getDate(new Date(),courseTable.getWeekCount(),weekIndex), courseTable.getBeginTime()));
+		courseTable.setDate(ToolClass.getDateAndTime(ToolClass.getDate(date,courseTable.getWeekCount(),weekIndex), courseTable.getBeginTime()));
 		
 		courseTable.setUpdateTime(new Date());
 		CourseTableService transService = enhance(CourseTableService.class);

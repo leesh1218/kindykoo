@@ -11,11 +11,13 @@ import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.tx.Tx;
 import com.kindykoo.common.model.CourseTable;
+import com.kindykoo.common.model.Paras;
 import com.kindykoo.common.model.ReserveCourse;
 import com.kindykoo.common.model.User;
 import com.kindykoo.common.tool.ToolClass;
 import com.kindykoo.controller.courseTable.CourseTableService;
 import com.kindykoo.controller.logs.LogsService;
+import com.kindykoo.controller.paras.ParasService;
 import com.kindykoo.controller.reserveCourse.ReserveCourseService;
 
 public class CourseTableService {
@@ -23,6 +25,7 @@ public class CourseTableService {
 	public static final CourseTableService me = new CourseTableService();
 	private static final ReserveCourseService reserveCourseService = ReserveCourseService.me;
 	private static final CourseTable dao = new CourseTable().dao();
+	private static ParasService parasService = ParasService.me;
 	
 	/**
 	 * 分页查询
@@ -231,7 +234,9 @@ public class CourseTableService {
 	public List<CourseTable> getCourseTableList(String qryType, String para,String courseTime,User user,String[] weeksub) {
 
 		List<CourseTable> courseTableList = null;
-		int weekCount = ToolClass.getWeekCount(new Date());
+//		int weekCount = ToolClass.getWeekCount(new Date());
+		Paras tmpparas = parasService.selectMember("currentWeekCount");
+		int weekCount = Integer.parseInt(tmpparas.getValue());
 //		if(weekCount == 26){
 //			weekCount++;
 //		}
@@ -302,7 +307,9 @@ public class CourseTableService {
 	}
 
 	public List<CourseTable> getCourseTimeLists(String qryType, String para, User user) {
-		int weekCount = ToolClass.getWeekCount(new Date());
+//		int weekCount = ToolClass.getWeekCount(new Date());
+		Paras tmpparas = parasService.selectMember("currentWeekCount");
+		int weekCount = Integer.parseInt(tmpparas.getValue());
 //		if(weekCount == 26){
 //			weekCount++;
 //		}

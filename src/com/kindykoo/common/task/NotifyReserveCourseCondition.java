@@ -6,11 +6,13 @@ import java.util.List;
 
 import com.jfinal.plugin.activerecord.Db;
 import com.kindykoo.common.model.CourseTable;
+import com.kindykoo.common.model.Paras;
 import com.kindykoo.common.model.ReserveCourse;
 import com.kindykoo.common.model.Student;
 import com.kindykoo.common.tool.ToolClass;
 import com.kindykoo.controller.courseTable.CourseTableController;
 import com.kindykoo.controller.logs.LogsService;
+import com.kindykoo.controller.paras.ParasService;
 import com.kindykoo.controller.reserveCourse.ReserveCourseService;
 import com.kindykoo.controller.student.StudentService;
 
@@ -18,6 +20,7 @@ public class NotifyReserveCourseCondition  implements Runnable{
 
 	private static StudentService service = StudentService.me;
 	private static ReserveCourseService reserveCourseService = ReserveCourseService.me;
+	private static ParasService parasService = ParasService.me;
 	
 	@Override
 	public void run() {
@@ -51,7 +54,9 @@ public class NotifyReserveCourseCondition  implements Runnable{
 		}
 		
 		String info = "";
-		int weekCount = ToolClass.getWeekCount(new Date());
+//		int weekCount = ToolClass.getWeekCount(new Date());
+		Paras tmpparas = parasService.selectMember("currentWeekCount");
+		int weekCount = Integer.parseInt(tmpparas.getValue());
 		String status = "已预约";
 		List<ReserveCourse> reserveCourses = reserveCourseService.getStudentNameByWeekCount( status, weekCount);
 		List<Student> students = new ArrayList<>();

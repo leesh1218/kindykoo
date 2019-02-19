@@ -1,6 +1,11 @@
 package com.kindykoo.common.task;
+/**
+ * currentDate问题修改未提版
+ */
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -35,7 +40,7 @@ public class InitWeekReserveCount implements Runnable {
 		int weekCount = ToolClass.getWeekCount(new Date());
 		Paras paras = parasService.selectMember("maxReserveWeekCount");
 		int maxWeekCount = Integer.parseInt(paras.getValue());
-		
+	
 //		String sql1 = "update student set enable=1 where weekReserveCount=weekMaxCount";
 		String sql1 = "update student set enable=1,weekReserveCount=0";
 		String sql2 = "update student set enable=0 where mainUserFlag='子用户' and mainUserName in (select * from (select name from student where mainUserFlag='主用户' and counts >= 2) temp)";
@@ -51,8 +56,38 @@ public class InitWeekReserveCount implements Runnable {
 		info = service.initWeekReserveCount(weekCount,sql1,sql2,sql22,sql3,sql33,sql4,sql44,sql5,sql55,sql6,sql66);
 		LogsService.insert("InitWeekReserveCount "+info);
 		
+		//更新当前周数
+		int tmpcount = parasService.updateCurrentWeekCount(weekCount);
+		if(tmpcount == 1){
+			info = "weekCount="+weekCount+" currentWeekCount updated success";
+			System.out.println(info);
+			LogsService.insert(info);
+		}else{
+			info = "weekCount="+weekCount+" currentWeekCount updated fail";
+			System.out.println(info);
+			LogsService.insert(info);
+//			return;
+		}
+		
 		//判断本阶段四周是否结束
 		if(maxWeekCount == weekCount){
+			//更新本阶段第一周第一天的日期
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+			Calendar calendar = Calendar.getInstance();
+			calendar.setFirstDayOfWeek(Calendar.MONDAY);  
+			calendar.add(Calendar.DATE, 1);
+			int tmpcountDate = parasService.updateCurrentDate(sdf.format(calendar.getTime()));
+			if(tmpcountDate == 1){
+				info = "weekCount="+weekCount+" currentDate updated success";
+				System.out.println(info);
+				LogsService.insert(info);
+			}else{
+				info = "weekCount="+weekCount+" currentDate updated fail";
+				System.out.println(info);
+				LogsService.insert(info);
+//				return;
+			}
+			
 			//讲本阶段四周课程移至历史表
 			reserveCourseService.moveReserveCourseHistory(maxWeekCount);
 			int count = parasService.updateWeekCount();
@@ -65,7 +100,7 @@ public class InitWeekReserveCount implements Runnable {
 				info = "weekCount="+weekCount+" minReserveWeekCount and maxReserveWeekCount updated fail";
 				System.out.println(info);
 				LogsService.insert(info);
-				return;
+//				return;
 			}
 		}else{
 //			weekCount = 26;

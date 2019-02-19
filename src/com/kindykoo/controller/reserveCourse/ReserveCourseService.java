@@ -16,9 +16,12 @@ import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.tx.Tx;
 import com.kindykoo.common.model.CourseTable;
+import com.kindykoo.common.model.Paras;
 import com.kindykoo.common.model.ReserveCourse;
 import com.kindykoo.common.model.Student;
+import com.kindykoo.common.tool.ToolClass;
 import com.kindykoo.controller.courseTable.CourseTableService;
+import com.kindykoo.controller.paras.ParasService;
 import com.kindykoo.controller.reserveCourse.ReserveCourseService;
 import com.kindykoo.controller.student.StudentService;
 
@@ -28,6 +31,8 @@ public class ReserveCourseService {
 	private static final StudentService stuService = StudentService.me;
 	private static final CourseTableService courseTableService = CourseTableService.me;
 	private static final ReserveCourse dao = new ReserveCourse().dao();
+	private static ParasService parasService = ParasService.me;
+	private static String []  reserveType = {"非固定课","固定课"};
 	
 	/**
 	 * 分页查询
@@ -300,19 +305,31 @@ public class ReserveCourseService {
 	public boolean DbReserveCourse(ReserveCourse reserveCourse, CourseTable courseTable, Student student,
 			Student subStudent) {
 		return Db.tx(() -> {
+//			int weekCount = ToolClass.getWeekCount(new Date());
+			Paras tmpparas = parasService.selectMember("currentWeekCount");
+			int weekCount = Integer.parseInt(tmpparas.getValue());
+			
 			boolean reserveCourseflag = Db.save("reserveCourse", reserveCourse.toRecord());
-			int courseTablecount = Db.update("update courseTable set stuNumber=?,allowFixed=?,enable=?,updateTime=now() where id=? and stuNumber=?",
-					courseTable.getStuNumber(),courseTable.getAllowFixed(),courseTable.getEnable(),courseTable.getId(),courseTable.getStuNumber()-1);
+			int courseTablecount = Db.update("update courseTable set stuNumber=?,fixedNum=?,allowFixed=?,enable=?,updateTime=now() where id=? and stuNumber=?",
+					courseTable.getStuNumber(),courseTable.getFixedNum(),courseTable.getAllowFixed(),courseTable.getEnable(),courseTable.getId(),courseTable.getStuNumber()-1);
 			if(subStudent == null) {
+				int tmpweekReserveCount = student.getWeekReserveCount();
+				if(weekCount != reserveCourse.getWeekCount() && ("admin".equals(reserveCourse.getOperator()) || reserveCourse.getReserveType().equals(reserveType[1]))) {
+					tmpweekReserveCount = student.getWeekReserveCount()+1;
+				}
 				int studentcount = Db.update("update student set disableCourseCount=?,weekReserveCount=?,enable=? where id=? and weekReserveCount=?",
-						student.getDisableCourseCount(),student.getWeekReserveCount(),student.getEnable(),student.getId(),student.getWeekReserveCount()-1);
+						student.getDisableCourseCount(),student.getWeekReserveCount(),student.getEnable(),student.getId(),tmpweekReserveCount-1);
 				return reserveCourseflag && courseTablecount==1 && studentcount==1;
 			}else {
+				int tmpweekReserveCount = subStudent.getWeekReserveCount();
+				if(weekCount != reserveCourse.getWeekCount() && ("admin".equals(reserveCourse.getOperator()) || reserveCourse.getReserveType().equals(reserveType[1]))) {
+					tmpweekReserveCount = subStudent.getWeekReserveCount()+1;
+				}
 				int studentcount = Db.update("update student set disableCourseCount=?,weekReserveCount=?,enable=? where id=? and disableCourseCount=?",
 						student.getDisableCourseCount(),student.getWeekReserveCount(),student.getEnable(),student.getId(),student.getDisableCourseCount()-1);
 				System.out.println(subStudent.toJson());
 				int subStudentcount = Db.update("update student set weekReserveCount=?,enable=? where id=? and weekReserveCount=?",
-						subStudent.getWeekReserveCount(),subStudent.getEnable(),subStudent.getId(),subStudent.getWeekReserveCount()-1);
+						subStudent.getWeekReserveCount(),subStudent.getEnable(),subStudent.getId(),tmpweekReserveCount-1);
 				return reserveCourseflag && courseTablecount==1 && studentcount==1 && subStudentcount==1;
 			}
 		});
@@ -449,5 +466,46 @@ public class ReserveCourseService {
 			j = Db.update("delete from reserveCourse where weekCount>="+(maxWeekCount-3)+" and weekCount<="+maxWeekCount);
 		}
 		System.out.println("InitWeekReserveCount.moveReserveCourseHistory i="+i+" j="+j);
+	}
+
+	public List<HashMap<String, Object>> selectMember2(String babyName) {
+		String sql = "select * from reserveCourse where studentName='"+babyName+"' order by id asc";
+		List<ReserveCourse> reserveCourses = dao.find(sql);
+		
+		if(reserveCourses == null || reserveCourses.size() == 0){
+			return null;
+		}else{
+			List<HashMap<String,Object>> list= new ArrayList<>();
+			HashMap<String, Object> map = null;
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+			SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			for (ReserveCourse reserveCourse : reserveCourses) {
+				map = new HashMap<>();
+				map.put("id", reserveCourse.getId());
+				map.put("studentName", reserveCourse.getStudentName());
+				map.put("courseTableID", reserveCourse.getCourseTableID());
+				map.put("weekCount", reserveCourse.getWeekCount());
+				map.put("week", reserveCourse.getWeek());
+				map.put("date", reserveCourse.getDate()==null?"":sdf.format(reserveCourse.getDate()));
+				map.put("courseTime", reserveCourse.getCourseTime());
+				map.put("course", reserveCourse.getCourse());
+				map.put("teacher1", reserveCourse.getTeacher1());
+				map.put("teacher2", reserveCourse.getTeacher2());
+				//map.put("classroom", reserveCourse.getClassroom());
+				map.put("operator", reserveCourse.getOperator());
+				map.put("reserveType", reserveCourse.getReserveType());
+				map.put("reserveTime", reserveCourse.getReserveTime()==null?"":sdf1.format(reserveCourse.getReserveTime()));
+				map.put("enableTime", reserveCourse.getEnableTime()==null?"":sdf1.format(reserveCourse.getEnableTime()));
+				map.put("confirmTime", reserveCourse.getConfirmTime()==null?"":sdf1.format(reserveCourse.getConfirmTime()));
+				if(reserveCourse.getPresent()){
+					map.put("present", "已上课");
+				}else{
+					map.put("present", "未上课");
+				}
+				map.put("status", reserveCourse.getStatus());
+				list.add(map);
+			}
+			return list;
+		}
 	}
 }
