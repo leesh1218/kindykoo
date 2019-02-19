@@ -286,6 +286,13 @@
 	$(".form-inline").append("<button data-toggle='tooltip' id='confirmExportBtn' class='btn btn-success btn-md'>导出</button>");
 	$(".form-inline").append("&nbsp;");
 	$(".form-inline").append("<button data-toggle='tooltip' id='cancelExportBtn' class='btn btn-danger btn-md'>取消</button>");
+	$(".form-inline").append("&nbsp;");
+	$(".form-inline").append("<button data-toggle='tooltip' id='exportBtn2' class='btn btn-info btn-md'>查课</button>");
+	$(".form-inline").append("<input placeholder='姓名' id='babyName' style='width: 110px;' name='babyName' class='form-control' type='text'/>");
+	$(".form-inline").append("&nbsp;");
+	$(".form-inline").append("<button data-toggle='tooltip' id='confirmExportBtn2' class='btn btn-success btn-md'>查课</button>");
+	$(".form-inline").append("&nbsp;");
+	$(".form-inline").append("<button data-toggle='tooltip' id='cancelExportBtn2' class='btn btn-danger btn-md'>取消</button>");
 	
 	$("#resetBtn").on("click", function(){
 		$("#keywords").val("");
@@ -303,6 +310,9 @@
 		$("#endDate").hide();
 		$("#confirmExportBtn").hide();
 		$("#cancelExportBtn").hide();
+		$("#babyName").hide();
+		$("#confirmExportBtn2").hide();
+		$("#cancelExportBtn2").hide();
 	})
 	
 	$("#exportBtn").on("click", function(){
@@ -315,12 +325,26 @@
 		//$("#endDate").val(endDate);
 	});
 	
+	$("#exportBtn2").on("click", function(){
+		$("#exportBtn2").hide();
+		$("#babyName").show();
+		$("#confirmExportBtn2").show();
+		$("#cancelExportBtn2").show();
+	});
+	
 	$("#cancelExportBtn").on("click", function(){
 		$("#exportBtn").show();
 		$("#beginDate").hide();
 		$("#endDate").hide();
 		$("#confirmExportBtn").hide();
 		$("#cancelExportBtn").hide();
+	});
+	
+	$("#cancelExportBtn2").on("click", function(){
+		$("#exportBtn2").show();
+		$("#babyName").hide();
+		$("#confirmExportBtn2").hide();
+		$("#cancelExportBtn2").hide();
 	});
 	
 	$("#confirmExportBtn").on("click", function(){
@@ -364,6 +388,54 @@
 						$("#cancelExportBtn").hide();
 						refreshThisTable();
 						var layerDownload = layer.confirm('您已经成功导出了'+beginDate+'到'+endDate+'共'+ret.times+'条约课记录！', {
+							  btn: ['下载文件'] //按钮
+							}, function(){
+								layer.close(layerDownload);
+								window.location.href=ret.path;
+							});
+					}else{
+						layer.alert(ret.infoMsg, {
+						    skin: 'layui-layer-lan'
+						    ,closeBtn: 0
+						    ,anim: 4 //动画类型
+						  });
+					}
+				}
+			
+			})
+		});
+	});
+	
+	$("#confirmExportBtn2").on("click", function(){
+		var babyName = $("#babyName").val();
+		
+		if(babyName==''){
+			layer.alert('姓名不能为空！', {
+			    skin: 'layui-layer-lan'
+			    ,closeBtn: 0
+			    ,anim: 5 //动画类型
+			  });
+			return;
+		}
+		
+		layer.confirm('确认导出['+babyName+']的所有约课记录吗？', {icon: 3, title:'请确认'}, function(index){
+			var loadIndex = layer.load();
+			$.ajax({
+				type: "post",
+				dataType: "json",
+				url: "admin/reserveCourse/export2/",
+				data: {
+					babyName: babyName
+				},
+				success: function(ret){
+					layer.close(loadIndex);
+					if(ret.isOK){
+						$("#exportBtn2").show();
+						$("#babyName").hide();
+						$("#confirmExportBtn2").hide();
+						$("#cancelExportBtn2").hide();
+						refreshThisTable();
+						var layerDownload = layer.confirm('您已经成功导出了['+babyName+']共'+ret.times+'条约课记录！', {
 							  btn: ['下载文件'] //按钮
 							}, function(){
 								layer.close(layerDownload);
