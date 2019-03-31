@@ -70,6 +70,8 @@ public class NotifyReserveCourseCondition  implements Runnable{
 				List<Student> studentList = service.selectMember(student);
 				student = studentList.get(0);
 				if(student.getWeekReserveCount() != weekReserveCount){
+					info = "check weekReserveCount===== student="+student.getName()+" student.getWeekReserveCount()="+student.getWeekReserveCount()+" weekReserveCount="+weekReserveCount;
+					LogsService.insert(info);
 					System.out.println("weekReserveCount: student.getName()="+student.getName()+" student.getPhone()="+student.getPhone());
 					student.setWeekReserveCount(weekReserveCount);
 					i++;
@@ -103,6 +105,8 @@ public class NotifyReserveCourseCondition  implements Runnable{
 					if(tmpstudentList!=null && tmpstudentList.size()==1){
 						int disableCourseCount = reserveCourseService.getDisableCourseCountTest(weekCount,reserveCourse);
 						if(student.getDisableCourseCount() != disableCourseCount) {
+							info = "check disableCourseCount===== student="+student.getName()+" student.getDisableCourseCount()="+student.getDisableCourseCount()+" disableCourseCount="+disableCourseCount;
+							LogsService.insert(info);
 							System.out.println("disableCourseCount: student.getName()="+student.getName()+" student.getPhone()="+student.getPhone());
 							student.setDisableCourseCount(disableCourseCount);
 							i++;
@@ -114,6 +118,8 @@ public class NotifyReserveCourseCondition  implements Runnable{
 						reserveCourse.setStudentName(tmpstudentList.get(1).getName());
 						int disableCourseCount2 = reserveCourseService.getDisableCourseCountTest(weekCount,reserveCourse);
 						if(student.getDisableCourseCount() != (disableCourseCount1+disableCourseCount2)) {
+							info = "check disableCourseCount===== student="+student.getName()+" student.getDisableCourseCount()="+student.getDisableCourseCount()+" disableCourseCount="+(disableCourseCount1+disableCourseCount2);
+							LogsService.insert(info);
 							System.out.println("disableCourseCount: student.getName()="+student.getName()+" student.getPhone()="+student.getPhone());
 							student.setDisableCourseCount(disableCourseCount1+disableCourseCount2);
 							i++;
@@ -127,6 +133,30 @@ public class NotifyReserveCourseCondition  implements Runnable{
 			Db.batchUpdate(tempstudents, tempstudents.size());
 			info = "check disableCourseCount===== batch update "+tempstudents.size();
 			LogsService.insert(info);
+		}
+		
+		reserveCourses = reserveCourseService.getStudentNameFixedCondition(weekCount);
+		//固定约课情况
+		Paras paras = parasService.selectMember("maxReserveWeekCount");
+		int maxReserveWeekCount = Integer.parseInt(paras.getValue());
+		if(reserveCourses != null && reserveCourses.size() > 0){
+			for (ReserveCourse reserveCourse : reserveCourses) {
+				ReserveCourse temp = new ReserveCourse();
+				temp.setWeek(reserveCourse.getWeek());
+				temp.setCourseTime(reserveCourse.getCourseTime());
+				temp.setCourse(reserveCourse.getCourse());
+				temp.setStudentName(reserveCourse.getStudentName());
+				temp.setPhone(reserveCourse.getPhone());
+				temp.setOperator(reserveCourse.getOperator());
+				temp.setReserveType(reserveCourse.getReserveType());
+				temp.setWeekCount(reserveCourse.getWeekCount());
+				List<ReserveCourse> list2 = reserveCourseService.selectMember(temp,"reserveCourseFixedCondition");
+				if(list2.size() != (maxReserveWeekCount-reserveCourse.getWeekCount()+1)) {
+					info = "check reserveCourseFixedCondition===== student="+reserveCourse.getStudentName()+" courserTime="+reserveCourse.getCourseTime()+" courser="+reserveCourse.getCourse();
+					LogsService.insert(info);
+				}
+			}
+			
 		}
 	}
 

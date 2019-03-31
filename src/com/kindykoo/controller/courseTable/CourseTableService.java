@@ -288,12 +288,14 @@ public class CourseTableService {
 			sql = "select * from courseTable where weekCount ="+courseTable.getWeekCount();
 		}else if("myConfirmCourses".equals(flag)){
 			if(courseTable != null && !"".equals(courseTable.getTeacher2())){
-				sql = "select * from courseTable where teacher2 ='"+courseTable.getTeacher2()+"' and weekCount= "+courseTable.getWeekCount()+" and week = '"+courseTable.getWeek()+"'";
+				sql = "select * from courseTable where status in ('未确认','未上课','上课中') and teacher2 ='"+courseTable.getTeacher2()+"' and weekCount= "+courseTable.getWeekCount()+" and week = '"+courseTable.getWeek()+"'";
 			}else{
 				sql = "select * from courseTable where status in ('未确认','未上课','上课中') and teacher1 ='"+courseTable.getTeacher1()+"' and weekCount= "+courseTable.getWeekCount()+" and week = '"+courseTable.getWeek()+"'";
 			}
 		}else if("myConfirmCourses2".equals(flag)){
 				sql = "select * from courseTable where status='已确认' and teacher1 ='"+courseTable.getTeacher1()+"' and weekCount= "+courseTable.getWeekCount()+" and week = '"+courseTable.getWeek()+"'";
+		}else if("myConfirmCourses22".equals(flag)){
+			sql = "select * from courseTable where status='已确认' and teacher2 ='"+courseTable.getTeacher2()+"' and weekCount= "+courseTable.getWeekCount()+" and week = '"+courseTable.getWeek()+"'";
 		}else if("courseTableCondition".equals(flag)){
 			sql = "select * from courseTable where stuNumber >= maxNumber and updateTime>date_sub(now(), interval 12 hour)";
 		}else if("courseTableFixedCondition".equals(flag)){

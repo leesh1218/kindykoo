@@ -207,6 +207,10 @@ public class ReserveCourseController extends Controller {
 		if("已确认".equals(status)) {
 			qryFlag = "myConfirmCourses2";//查询已经确认的课程
 		}
+		if("已确认22".equals(status)) {
+			qryFlag = "myConfirmCourses22";//查询已经确认的课程
+			courseTable.setTeacher2(operator);
+		}
 		List<CourseTable> courseTables = courseTableService.selectMember(courseTable,qryFlag);
 		List<ConfirmCourse> list = null;
 		if(courseTables !=null && courseTables.size()>0){
@@ -263,7 +267,7 @@ public class ReserveCourseController extends Controller {
 					courseTable2.setCourse(StringUtils.substringAfter(courseTable2.getCourse(), "-"));
 				}
 				confirmCourse.setCourse(courseTable2.getCourse());
-				if("助教".equals(flag)){
+				if("助教".equals(flag) || "已确认22".equals(status)){
 					confirmCourse.setTeacher1(courseTable2.getTeacher1());
 				}else{
 					confirmCourse.setTeacher2(courseTable2.getTeacher2());

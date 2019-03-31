@@ -160,6 +160,10 @@ public class ReserveCourseService {
 			sql = "select * from reserveCourse where weekCount = "+reserveCourse.getWeekCount()+" and week='"+reserveCourse.getWeek()+"' and courseTime='"+reserveCourse.getCourseTime()+"' and course='"+reserveCourse.getCourse()+"'";
 		}else if("doSubmit_phone".equals(flag)) {
 			sql = "select * from reserveCourse where status not in ('已请假','已确认') and studentName='"+reserveCourse.getStudentName()+"' and phone='"+reserveCourse.getPhone()+"'";
+		}else if("reserveCourseFixedCondition".equals(flag)) {
+			Paras paras = parasService.selectMember("maxReserveWeekCount");
+			int maxReserveWeekCount = Integer.parseInt(paras.getValue());
+			sql = "select * from reserveCourse where studentName='"+reserveCourse.getStudentName()+"' and phone='"+reserveCourse.getPhone()+"' and week='"+reserveCourse.getWeek()+"' and courseTime='"+reserveCourse.getCourseTime()+"' and course='"+reserveCourse.getCourse()+"' and operator='"+reserveCourse.getOperator()+"' and reserveType='"+reserveCourse.getReserveType()+"' and weekCount>="+reserveCourse.getWeekCount()+" and weekCount<="+maxReserveWeekCount;
 		}
 		List<ReserveCourse> reserveCourses = dao.find(sql);
 		if(reserveCourses == null || reserveCourses.size() == 0)
@@ -259,6 +263,91 @@ public class ReserveCourseService {
 		return true;
 	}
 	
+	public boolean DbconfirmCourse(JSONArray studentsJson,CourseTable courseTable,String operator){
+		List<ReserveCourse> reserveCourses = new ArrayList<>();
+		List<Student> students = new ArrayList<>();
+		for (int i=0; i<studentsJson.size(); i++) {
+			JSONObject studentJson = (JSONObject) studentsJson.get(i);
+			//获取reserveCourse
+			ReserveCourse reserveCourse = new ReserveCourse();
+			reserveCourse.setCourseTableID(courseTable.getId());
+			reserveCourse.setStudentName(studentJson.getString("name"));
+			reserveCourse.setPhone(studentJson.getString("phone"));
+			reserveCourse = me.selectMember(reserveCourse, "confirmCourse").get(0);
+			reserveCourse.setStatus("已确认");
+			reserveCourse.setPresent(true);
+			reserveCourse.setConfirmTime(new Date());
+			reserveCourse.setConfirmMan(operator);
+			//获取student
+			Student student = new Student();
+			student.setName(studentJson.getString("name"));
+			student.setPhone(studentJson.getString("phone"));
+			List<Student> studentList = stuService.selectMember(student);
+			if (studentList == null || studentList.size() != 1) {
+				return false;
+			} 
+			student = studentList.get(0);
+			if("子用户".equals(student.getMainUserFlag())){
+				Student subStudent = new Student();
+				subStudent.setName(student.getMainUserName());
+				subStudent.setPhone(student.getPhone());
+				List<Student> studentList2 = stuService.selectMember(subStudent);
+				if (studentList2 == null || studentList2.size() != 1) {
+					return false;
+				} 
+				student = studentList2.get(0);
+			}
+			if("未上课".equals(studentJson.getString("status"))){
+				reserveCourse.setPresent(false);
+				student.setCounts(student.getCounts()+1);
+				if(student.getCounts()>=2){
+					//student.setRemarks(new StringBuilder(student.getRemarks()).append("禁止约课原因为旷课大于两次").toString());
+					student.setEnable(false);
+				}
+			}
+			student.setDisableCourseCount(student.getDisableCourseCount()-1);
+			if(student.getDisableCourseCount()<0) {
+				student.setDisableCourseCount(0);
+			}
+			if("课时卡".equals(student.getVipType())){
+				student.setUseCourseCount(student.getUseCourseCount()+1);
+				student.setRemainCourseCount(student.getRemainCourseCount()-1);
+				if(student.getRemainCourseCount()<0) {
+					student.setRemainCourseCount(0);
+				}
+			}
+			reserveCourses.add(reserveCourse);
+			students.add(student);
+//			if(!me.update(reserveCourse) || !stuService.update(student)){
+//				return false;
+//			}
+		}
+//		if(!courseTableService.update(courseTable)){
+//			return false;
+//		}
+		return DbconfirmCourseCore(reserveCourses, courseTable, students);
+	}
+	
+	/**
+	 * 确认课程
+	 * @param reserveCourses
+	 * @param courseTable
+	 * @param students
+	 * @return
+	 */
+	public boolean DbconfirmCourseCore(List<ReserveCourse> reserveCourses, CourseTable courseTable, List<Student> students) {
+		return Db.tx(() -> {
+			
+			for(int i=0; i<reserveCourses.size(); i++) {
+				
+			}
+			
+			
+			return true;
+		});
+		
+	}
+	
 	@Before(Tx.class)
 	public boolean confirmCourseAdmin(ReserveCourse reserveCourse, Student student) {
 		if("子用户".equals(student.getMainUserFlag())){
@@ -294,6 +383,7 @@ public class ReserveCourseService {
 		}
 		return true;
 	}
+	
 	/**
 	 * 2018年11月25日
 	 * @param reserveCourse
@@ -396,7 +486,17 @@ public class ReserveCourseService {
 	 */
 	public List<ReserveCourse> getStudentNameByWeekCount( String status, int weekCount) {
 		
-		String sql = "select DISTINCT(phone),studentName from reserveCourse where status='"+status+"' and weekCount="+weekCount;
+		String sql = "select DISTINCT(phone),studentName from reserveCourse where status in ('已预约','上课中','未确认','已确认') and weekCount="+weekCount;
+		List<ReserveCourse> reserveCourses = dao.find(sql);
+		if(reserveCourses != null && reserveCourses.size() > 0){
+			return reserveCourses;
+		}
+		return null;
+	}
+	
+	public List<ReserveCourse> getStudentNameFixedCondition(int weekCount) {
+		
+		String sql = "select * from reserveCourse where reserveType='固定课' and weekCount="+weekCount;
 		List<ReserveCourse> reserveCourses = dao.find(sql);
 		if(reserveCourses != null && reserveCourses.size() > 0){
 			return reserveCourses;
