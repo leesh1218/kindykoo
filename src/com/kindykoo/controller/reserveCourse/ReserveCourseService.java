@@ -164,6 +164,8 @@ public class ReserveCourseService {
 			Paras paras = parasService.selectMember("maxReserveWeekCount");
 			int maxReserveWeekCount = Integer.parseInt(paras.getValue());
 			sql = "select * from reserveCourse where studentName='"+reserveCourse.getStudentName()+"' and phone='"+reserveCourse.getPhone()+"' and week='"+reserveCourse.getWeek()+"' and courseTime='"+reserveCourse.getCourseTime()+"' and course='"+reserveCourse.getCourse()+"' and operator='"+reserveCourse.getOperator()+"' and reserveType='"+reserveCourse.getReserveType()+"' and weekCount>="+reserveCourse.getWeekCount()+" and weekCount<="+maxReserveWeekCount;
+		}else if("enableCourseCore".equals(flag)) {
+			sql = "select * from reserveCourse where status in ('已预约','上课中') and week='"+reserveCourse.getWeek()+"' and courseTime='"+reserveCourse.getCourseTime()+"' and course='"+reserveCourse.getCourse()+"' and weekCount="+reserveCourse.getWeekCount()+" and teacher1='"+reserveCourse.getTeacher1()+"'";
 		}
 		List<ReserveCourse> reserveCourses = dao.find(sql);
 		if(reserveCourses == null || reserveCourses.size() == 0)
@@ -422,6 +424,76 @@ public class ReserveCourseService {
 						subStudent.getWeekReserveCount(),subStudent.getEnable(),subStudent.getId(),tmpweekReserveCount-1);
 				return reserveCourseflag && courseTablecount==1 && studentcount==1 && subStudentcount==1;
 			}
+		});
+	}
+	
+	public boolean DbOnlyFixedReserveCourse(List<ReserveCourse> reserveCourseList, List<CourseTable> courseTableList, Student student,
+			Student subStudent) {
+		return Db.tx(() -> {
+//			int weekCount = ToolClass.getWeekCount(new Date());
+			Paras tmpparas = parasService.selectMember("currentWeekCount");
+			int weekCount = Integer.parseInt(tmpparas.getValue());
+			
+			boolean reserveCourseflag = true;
+			boolean CourseTableflag = true;
+			boolean studentflag = true;
+			boolean subStudentflag = true;
+			
+			for(int i=0; i<reserveCourseList.size(); i++) {
+				ReserveCourse reserveCourse = reserveCourseList.get(i);
+				CourseTable courseTable = courseTableList.get(i);
+				if(!Db.save("reserveCourse", reserveCourse.toRecord())) {
+					reserveCourseflag = false;
+					break;
+				}
+				
+				int courseTablecount = Db.update("update courseTable set stuNumber=?,fixedNum=?,allowFixed=?,enable=?,updateTime=now() where id=? and stuNumber=?",
+						courseTable.getStuNumber(),courseTable.getFixedNum(),courseTable.getAllowFixed(),courseTable.getEnable(),courseTable.getId(),courseTable.getStuNumber()-1);
+				
+				if(courseTablecount != 1) {
+					CourseTableflag = false;
+					break;
+				}
+			}
+			
+			if(subStudent == null) {
+				
+				System.out.println("主用户固定约课...");
+				System.out.println("主用户姓名："+student.getName());
+				
+				int tmpweekReserveCount = student.getWeekReserveCount();
+				int studentcount = Db.update("update student set disableCourseCount=?,weekReserveCount=?,enable=? where id=? and weekReserveCount=?",
+						student.getDisableCourseCount(),student.getWeekReserveCount(),student.getEnable(),student.getId(),tmpweekReserveCount-1);
+				if(studentcount != 1) {
+					studentflag = false;
+				}
+				
+				return reserveCourseflag && CourseTableflag && studentflag;
+				
+			}else {
+				
+				System.out.println("子用户固定约课...");
+				System.out.println("主用户姓名："+student.getName());
+				System.out.println("子用户姓名："+subStudent.getName());
+				
+				int tmpweekReserveCount = subStudent.getWeekReserveCount();
+				int studentcount = Db.update("update student set disableCourseCount=?,weekReserveCount=?,enable=? where id=? and disableCourseCount=?",
+						student.getDisableCourseCount(),student.getWeekReserveCount(),student.getEnable(),student.getId(),student.getDisableCourseCount()-reserveCourseList.size());
+				if(studentcount != 1) {
+					studentflag = false;
+				}
+				
+				System.out.println(subStudent.toJson());
+				int subStudentcount = Db.update("update student set weekReserveCount=?,enable=? where id=? and weekReserveCount=?",
+						subStudent.getWeekReserveCount(),subStudent.getEnable(),subStudent.getId(),tmpweekReserveCount-1);
+				
+				if(subStudentcount != 1) {
+					subStudentflag = false;
+				}
+				
+				return reserveCourseflag && CourseTableflag && studentflag && subStudentflag;
+			}
+			
 		});
 	}
 	

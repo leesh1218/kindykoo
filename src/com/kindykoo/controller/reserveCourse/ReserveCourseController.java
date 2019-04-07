@@ -398,10 +398,25 @@ public class ReserveCourseController extends Controller {
 
 		if(!courseTable.getEnable()){
 			courseTable.setEnable(true);
+			ReserveCourse temp = new ReserveCourse();
+			temp.setWeek(courseTable.getWeek());
+			temp.setCourseTime(courseTable.getCourseTime());
+			temp.setCourse(courseTable.getCourse());
+			temp.setWeekCount(courseTable.getWeekCount());
+			temp.setTeacher1(courseTable.getTeacher1());
+			List<ReserveCourse> templist = service.selectMember(temp, "enableCourseCore");
+			if(courseTable.getStuNumber() != templist.size()) {
+				courseTable.setStuNumber(templist.size());
+			}
 		}
+		
 		courseTable.setStuNumber(courseTable.getStuNumber()-1);
 		if(courseTable.getStuNumber()<0) {
 			courseTable.setStuNumber(0);
+		}
+		
+		if(courseTable.getStuNumber() >= courseTable.getMaxNumber()) {
+			courseTable.setEnable(false);
 		}
 		
 		Student student = new Student();
@@ -884,6 +899,141 @@ public class ReserveCourseController extends Controller {
 	}
 	
 	/**
+	 * 固定课程
+	 * @param reserveCourseList
+	 * @param students
+	 * @param subStudent
+	 * @param courseTableList
+	 * @param flag
+	 * @param weekCount
+	 * @param user
+	 * @return
+	 */
+	public boolean onlyFixedCourse(List<ReserveCourse> reserveCourseList,Student students,Student subStudent,List<CourseTable> courseTableList,String flag, int weekCount, User user){
+		
+		List<ReserveCourse> reserveCourseNewList = new ArrayList<>();
+		List<CourseTable> courseTableNewList = new ArrayList<>();
+		
+		for(int i=0; i<reserveCourseList.size(); i++) {
+			
+			CourseTable courseTable = courseTableList.get(i);
+			ReserveCourse reserveCourse = reserveCourseList.get(i);
+			
+			boolean res = "课时卡".equals(students.getVipType());
+			if(!res){
+				Student temp = students;
+				if(subStudent != null){
+					temp = subStudent;
+				}
+				if(temp.getAge()>30){
+					ReserveCourse tempReserveCourse = new ReserveCourse();
+					tempReserveCourse.setStudentName(temp.getName());
+					tempReserveCourse.setPhone(user.getPhone());
+					tempReserveCourse.setCourse(courseTable.getCourse());
+					tempReserveCourse.setWeekCount(courseTable.getWeekCount());
+					List<ReserveCourse> tempList = service.selectMember(tempReserveCourse,"repeatReserve");
+					if (tempList != null) {
+							setAttr("isOK", false);
+							setAttr("infoMsg", "您第"+(i+4-counts)+"周已经预约过"+courseTable.getCourse()+"课程了，该课程不允许重复预约");
+							renderJson();
+							return false;
+					}
+				}
+			}
+			reserveCourse.setCourseTableID(courseTable.getId());
+			//查看是否已经预约本节课
+			List<ReserveCourse> list1 = service.selectMember(reserveCourse,"reserveOrFixedCourse");
+			if (list1 != null) {
+					setAttr("isOK", false);
+					setAttr("infoMsg", "您已经预约过本节课了，可以去个人中心查看已经预约的课程");
+					renderJson();
+					return false;
+			}
+			
+			reserveCourse.setDate(courseTable.getDate());
+			List<ReserveCourse> list2 = service.selectMember(reserveCourse,"repeatTimeReserve");
+			if (list2 != null) {
+					setAttr("isOK", false);
+					setAttr("infoMsg", "您该时间段已经预约过别的课程了，时间冲突，预约失败");
+					renderJson();
+					return false;
+			}
+			
+			reserveCourse.setWeekCount(courseTable.getWeekCount());
+			reserveCourse.setWeek(courseTable.getWeek());
+			reserveCourse.setDate(courseTable.getDate());
+			reserveCourse.setCourseTime(courseTable.getCourseTime());
+			reserveCourse.setCourse(courseTable.getCourse());
+			reserveCourse.setTeacher1(courseTable.getTeacher1());
+			reserveCourse.setTeacher2(courseTable.getTeacher2());
+			reserveCourse.setClassroom(courseTable.getClassroom());
+			reserveCourse.setPresent(false);
+			reserveCourse.setStatus("已预约");
+//			if("上课中".equals(courseTable.getStatus())) {
+//				reserveCourse.setStatus("上课中");
+//			}
+			reserveCourse.setReserveTime(new Date());
+			//更新课程预约人数
+			courseTable.setStuNumber(courseTable.getStuNumber()+1);
+			if(courseTable.getStuNumber()>=courseTable.getMaxNumber()){
+				courseTable.setEnable(false);
+				courseTable.setAllowFixed(false);
+			}
+			if(!checkCourseTime(courseTable.getDate(),5)){
+				setAttr("isOK", false);
+				setAttr("infoMsg", "课程开始时间前5分钟禁止约课！");
+				renderJson();
+				return false;
+			}
+			
+			students.setDisableCourseCount(students.getDisableCourseCount()+1);
+			if("课时卡".equals(students.getVipType()) && students.getDisableCourseCount() >= students.getRemainCourseCount()){
+				students.setEnable(false);
+			}
+			if(courseTable.getWeekCount() == weekCount){
+				//更新学员本周预约课程的节数及累积预约课程次数
+				if(subStudent!=null){
+					subStudent.setWeekReserveCount(subStudent.getWeekReserveCount()+1);
+					if(!"课时卡".equals(students.getVipType()) && subStudent.getWeekReserveCount() == subStudent.getWeekMaxCount()){
+						subStudent.setEnable(false);
+					}
+					if("课时卡".equals(students.getVipType()) && (students.getUseCourseCount()+students.getDisableCourseCount()) == students.getCourseCount()){
+						students.setEnable(false);
+						subStudent.setEnable(false);
+					}
+				}else{
+					students.setWeekReserveCount(students.getWeekReserveCount()+1);
+					if(!"课时卡".equals(students.getVipType()) && students.getWeekReserveCount() == students.getWeekMaxCount()){
+						students.setEnable(false);
+					}
+					if("课时卡".equals(students.getVipType()) &&(students.getUseCourseCount()+students.getDisableCourseCount()) == students.getCourseCount()){
+						students.setEnable(false);
+					}
+				}
+			}
+
+			reserveCourseNewList.add(reserveCourse);
+			courseTableNewList.add(courseTable);
+			
+		}
+		
+		if(service.DbOnlyFixedReserveCourse(reserveCourseNewList,courseTableNewList,students,subStudent)){
+			if("reserve".equals(flag)){
+				setAttr("isOK", true);
+				setAttr("infoMsg", "预约课程成功！");	
+				renderJson();
+			}
+			return true;
+		}else{
+			setAttr("isOK", false);
+			setAttr("infoMsg", "预约课程失败,请您稍候再试");
+			renderJson();
+			return false;
+		}
+		
+	}
+	
+	/**
 	 * 
 	 * @param courseTable
 	 * @param minutes
@@ -1145,7 +1295,8 @@ public class ReserveCourseController extends Controller {
 		
 		if("reserveAndFixed".equals(flag) && "课时卡".equals(students.getVipType()) && (students.getDisableCourseCount()+counts) >= students.getRemainCourseCount()) {
 			setAttr("isOK", false);
-			setAttr("infoMsg", "您剩余课时不够固定约"+(counts+1)+"节课，如有问题请联系前台老师！");
+			setAttr("infoMsg", "您冻结课时"+students.getDisableCourseCount()+"节，剩余课时"+students.getRemainCourseCount()+"节，课时不够，固定接下来"+(counts+1)+"周的课程失败！");
+//			setAttr("infoMsg", "您剩余课时不够固定约"+(counts+1)+"节课，如有问题请联系前台老师！");
 			renderJson();
 			return false;
 		}
@@ -1191,7 +1342,7 @@ public class ReserveCourseController extends Controller {
 			List<ReserveCourse> list1 = service.selectMember(temp,"reserveCourseCore1");
 			if(list1 != null && list1.size() >0 ){
 				setAttr("isOK", false);
-				setAttr("infoMsg", "您已经固定约课过该课程！请前往个人中心查看");
+				setAttr("infoMsg", "您已经约过该课程！请前往个人中心查看");
 				renderJson();
 				return false;
 			}
@@ -1220,6 +1371,9 @@ public class ReserveCourseController extends Controller {
 				}
 			}
 			
+			List<ReserveCourse> reserveCourseList = new ArrayList<>();
+			List<CourseTable> courseTableList = new ArrayList<>();
+			
 			for (int i=0; i<list.size(); i++) {
 				reserveCourse = new ReserveCourse();
 				reserveCourse.setPhone(user.getPhone());
@@ -1238,15 +1392,24 @@ public class ReserveCourseController extends Controller {
 				if(courseTable2.getFixedNum()>=courseTable2.getMaxFixedNum()){
 					courseTable2.setAllowFixed(false);
 				}
-				if(!this.reserveOrFixedCourse(reserveCourse, students, subStudent,courseTable2, flag,weekCount,user))
-					return false;
-				if(!"".equals(formId) && i == 0){
-					boolean res = sendReserveInfo(babyName,courseTable2 , formId, operator,flag);
-					if(res){
-						System.out.println(babyName+"固定约"+courseTable.getCourse()+"课成功，发送服务通知成功！");
-					}else{
-						System.out.println(babyName+"固定约"+courseTable.getCourse()+"课成功，发送服务通知失败！");
-					}
+				
+				reserveCourseList.add(reserveCourse);
+				courseTableList.add(courseTable2);
+//				if(!this.reserveOrFixedCourse(reserveCourse, students, subStudent,courseTable2, flag,weekCount,user))
+//					return false;
+			}
+			
+			//仅固定课程
+			if(!this.onlyFixedCourse(reserveCourseList, students, subStudent,courseTableList, flag,weekCount,user))
+				return false;
+			
+			CourseTable firstCourseTable = courseTableList.get(0);
+			if(!"".equals(formId)){
+				boolean res = sendReserveInfo(babyName,firstCourseTable , formId, operator,flag);
+				if(res){
+					System.out.println(babyName+"固定约"+courseTable.getCourse()+"课成功，发送服务通知成功！");
+				}else{
+					System.out.println(babyName+"固定约"+courseTable.getCourse()+"课成功，发送服务通知失败！");
 				}
 			}
 			setAttr("isOK", true);
