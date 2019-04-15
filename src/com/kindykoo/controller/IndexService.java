@@ -32,7 +32,10 @@ public class IndexService {
 		String sql_5 = "select count(*) as id from reserveCourse where status='已预约' and weekCount="+weekCount;
 		String sql_6 = "select count(*) as id from reserveCourse where status='上课中' and weekCount="+weekCount;
 		String sql_7 = "select count(*) as id from reserveCourse where status='未确认' and weekCount="+weekCount;
-		String sql_8 = "select count(*) as id from reserveCourse where status='已预约' and weekCount>="+minWeekCount+" and weekCount<="+maxWeekCount;
+		String sql_8 = "select count(*) as id from reserveCourse where status='已确认' and weekCount="+weekCount;
+		String sql_9 = "select count(*) as id from reserveCourse where status='已预约' and weekCount>="+minWeekCount+" and weekCount<="+maxWeekCount;
+		String sql_10 = "select count(*) as id from reserveCourse where status='未确认' and weekCount>="+minWeekCount+" and weekCount<="+maxWeekCount;
+		String sql_11 = "select count(*) as id from reserveCourse where status='已确认' and weekCount>="+minWeekCount+" and weekCount<="+maxWeekCount;
 		
 		Map<String,Integer> maps = new HashMap<>();
 		List<Object> sql_1_str = Db.query(sql_1);
@@ -50,7 +53,13 @@ public class IndexService {
 		List<Object>  sql_7_str = Db.query(sql_7);
 		int reserveCourse_sum_ed = Integer.parseInt(sql_7_str.get(0).toString());
 		List<Object>  sql_8_str = Db.query(sql_8);
-		int reserveCourse_sumAll = Integer.parseInt(sql_8_str.get(0).toString());
+		int reserveCourse_sum_confirmed = Integer.parseInt(sql_8_str.get(0).toString());
+		List<Object>  sql_9_str = Db.query(sql_9);
+		int reserveCourse_sumAll = Integer.parseInt(sql_9_str.get(0).toString());
+		List<Object>  sql_10_str = Db.query(sql_10);
+		int reserveCourse_sum_edAll = Integer.parseInt(sql_10_str.get(0).toString());
+		List<Object>  sql_11_str = Db.query(sql_11);
+		int reserveCourse_sum_confirmedAll = Integer.parseInt(sql_11_str.get(0).toString());
 		
 		maps.put("weekReserveCount_sum", weekReserveCount_sum);
 		maps.put("disableCourseCount_sum", disableCourseCount_sum);
@@ -59,7 +68,10 @@ public class IndexService {
 		maps.put("reserveCourse_sum", reserveCourse_sum);
 		maps.put("reserveCourse_sum_ing", reserveCourse_sum_ing);
 		maps.put("reserveCourse_sum_ed", reserveCourse_sum_ed);
+		maps.put("reserveCourse_sum_confirmed", reserveCourse_sum_confirmed);
 		maps.put("reserveCourse_sumAll", reserveCourse_sumAll);
+		maps.put("reserveCourse_sum_edAll", reserveCourse_sum_edAll);
+		maps.put("reserveCourse_sum_confirmedAll", reserveCourse_sum_confirmedAll);
 		
 		return maps;
 	}

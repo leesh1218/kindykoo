@@ -1,9 +1,7 @@
 package com.kindykoo.common.task;
 
-import java.util.Date;
 
 import com.kindykoo.common.model.Paras;
-import com.kindykoo.common.tool.ToolClass;
 import com.kindykoo.controller.courseTable.CourseTableService;
 import com.kindykoo.controller.logs.LogsService;
 import com.kindykoo.controller.paras.ParasService;

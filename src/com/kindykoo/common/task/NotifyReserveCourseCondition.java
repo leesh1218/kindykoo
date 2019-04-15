@@ -1,7 +1,6 @@
 package com.kindykoo.common.task;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import com.jfinal.plugin.activerecord.Db;
@@ -9,7 +8,6 @@ import com.kindykoo.common.model.CourseTable;
 import com.kindykoo.common.model.Paras;
 import com.kindykoo.common.model.ReserveCourse;
 import com.kindykoo.common.model.Student;
-import com.kindykoo.common.tool.ToolClass;
 import com.kindykoo.controller.courseTable.CourseTableController;
 import com.kindykoo.controller.logs.LogsService;
 import com.kindykoo.controller.paras.ParasService;
@@ -92,6 +90,10 @@ public class NotifyReserveCourseCondition  implements Runnable{
 		//冻结课时情况
 		//List<ReserveCourse> tempreserveCourses = reserveCourseService.getStudentNameByWeekCount( status, weekCount);
 		List<Student> tempstudents = new ArrayList<>();
+		tmpparas = parasService.selectMember("minReserveWeekCount");
+		int minReserveWeekCount = Integer.parseInt(tmpparas.getValue());
+		tmpparas = parasService.selectMember("maxReserveWeekCount");
+		int maxReserveWeekCount = Integer.parseInt(tmpparas.getValue());
 		if(reserveCourses != null && reserveCourses.size() > 0){
 			for (ReserveCourse reserveCourse : reserveCourses) {
 				int i = 0;
@@ -103,7 +105,7 @@ public class NotifyReserveCourseCondition  implements Runnable{
 				if("主用户".equals(student.getMainUserFlag())) {
 					List<Student> tmpstudentList = service.selectMemberTemp(student);
 					if(tmpstudentList!=null && tmpstudentList.size()==1){
-						int disableCourseCount = reserveCourseService.getDisableCourseCountTest(weekCount,reserveCourse);
+						int disableCourseCount = reserveCourseService.getDisableCourseCountTest(minReserveWeekCount,maxReserveWeekCount,reserveCourse);
 						if(student.getDisableCourseCount() != disableCourseCount) {
 							info = "check disableCourseCount===== student="+student.getName()+" student.getDisableCourseCount()="+student.getDisableCourseCount()+" disableCourseCount="+disableCourseCount;
 							LogsService.insert(info);
@@ -114,9 +116,9 @@ public class NotifyReserveCourseCondition  implements Runnable{
 					}
 					if(tmpstudentList!=null && tmpstudentList.size()==2) {//有子卡
 						reserveCourse.setStudentName(tmpstudentList.get(0).getName());
-						int disableCourseCount1 = reserveCourseService.getDisableCourseCountTest(weekCount,reserveCourse);
+						int disableCourseCount1 = reserveCourseService.getDisableCourseCountTest(minReserveWeekCount,maxReserveWeekCount,reserveCourse);
 						reserveCourse.setStudentName(tmpstudentList.get(1).getName());
-						int disableCourseCount2 = reserveCourseService.getDisableCourseCountTest(weekCount,reserveCourse);
+						int disableCourseCount2 = reserveCourseService.getDisableCourseCountTest(minReserveWeekCount,maxReserveWeekCount,reserveCourse);
 						if(student.getDisableCourseCount() != (disableCourseCount1+disableCourseCount2)) {
 							info = "check disableCourseCount===== student="+student.getName()+" student.getDisableCourseCount()="+student.getDisableCourseCount()+" disableCourseCount="+(disableCourseCount1+disableCourseCount2);
 							LogsService.insert(info);
@@ -137,8 +139,6 @@ public class NotifyReserveCourseCondition  implements Runnable{
 		
 		reserveCourses = reserveCourseService.getStudentNameFixedCondition(weekCount);
 		//固定约课情况
-		Paras paras = parasService.selectMember("maxReserveWeekCount");
-		int maxReserveWeekCount = Integer.parseInt(paras.getValue());
 		if(reserveCourses != null && reserveCourses.size() > 0){
 			for (ReserveCourse reserveCourse : reserveCourses) {
 				ReserveCourse temp = new ReserveCourse();

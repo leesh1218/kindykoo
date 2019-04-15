@@ -594,8 +594,8 @@ public class ReserveCourseService {
 		return 0;
 	}
 	
-	public int getDisableCourseCountTest(int weekCount, ReserveCourse reserveCourse) {
-		String sql = "select * from reserveCourse where phone='"+reserveCourse.getPhone()+"' and studentName='"+reserveCourse.getStudentName()+"' and status in ('已预约','上课中','未确认') and weekCount>="+weekCount;
+	public int getDisableCourseCountTest(int minReserveWeekCount, int maxReserveWeekCount, ReserveCourse reserveCourse) {
+		String sql = "select * from reserveCourse where phone='"+reserveCourse.getPhone()+"' and studentName='"+reserveCourse.getStudentName()+"' and status in ('已预约','上课中','未确认') and weekCount>="+minReserveWeekCount+" and weekCount<="+maxReserveWeekCount;
 		List<ReserveCourse> reserveCourses = dao.find(sql);
 		if(reserveCourses != null && reserveCourses.size() > 0){
 			return reserveCourses.size();
