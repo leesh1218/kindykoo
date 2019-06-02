@@ -88,6 +88,14 @@ public class InitWeekReserveCount implements Runnable {
 //				return;
 			}
 			
+			//删除courseTable里面下下个阶段weekCount 即将重复的数据（例如当前周22，下下一阶段为27-30周，courseTable如果有该周数的数据，删除）
+			int RepeatData = courseTableService.deleteRepeatData(maxWeekCount);
+			if(RepeatData > 0) {
+				info = "weekCount="+weekCount+" courseTable deleteRepeatData success and RepeatData="+RepeatData;
+				System.out.println(info);
+				LogsService.insert(info);
+			}
+			
 			//讲本阶段四周课程移至历史表
 			reserveCourseService.moveReserveCourseHistory(maxWeekCount);
 			int count = parasService.updateWeekCount();

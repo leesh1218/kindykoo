@@ -351,4 +351,8 @@ public class CourseTableService {
 		System.out.println(info);
 		return info;
 	}
+
+	public int deleteRepeatData(int maxWeekCount) {
+		return Db.update("delete from courseTable where weekCount>="+(maxWeekCount+5)+" and weekCount<="+(maxWeekCount+8));
+	}
 }

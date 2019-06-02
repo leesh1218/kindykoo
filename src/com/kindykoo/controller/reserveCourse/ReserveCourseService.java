@@ -635,7 +635,7 @@ public class ReserveCourseService {
 		int i=0,j=0;
 		i = Db.update("insert into reserveCourseHistory (select * from reserveCourse where weekCount>="+(maxWeekCount-3)+" and weekCount<="+maxWeekCount+")");
 		if(i != 0) {
-			j = Db.update("delete from reserveCourse where weekCount>="+(maxWeekCount-3)+" and weekCount<="+maxWeekCount);
+			//j = Db.update("delete from reserveCourse where weekCount>="+(maxWeekCount-3)+" and weekCount<="+maxWeekCount);
 		}
 		System.out.println("InitWeekReserveCount.moveReserveCourseHistory i="+i+" j="+j);
 	}
