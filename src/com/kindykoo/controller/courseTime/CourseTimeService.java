@@ -40,9 +40,9 @@ public class CourseTimeService {
 		}
 		if(where.length()>0){
 			where.insert(0, "from courseTime where");
-			where.append(" order by id asc");
+			where.append(" order by time asc");
 		}else{
-			where.append("from courseTime order by id asc");
+			where.append("from courseTime order by time asc");
 		}
 		return dao.paginate(pageNumber, pageSize, "select * ", where.toString());
 	}
@@ -77,6 +77,7 @@ public class CourseTimeService {
 	 * @return
 	 */
 	private boolean save(CourseTime courseTime) {
+		courseTime.setUpdateTime(new Date());
 		courseTime.setEnable(true);
 		courseTime.save();
 		return true;

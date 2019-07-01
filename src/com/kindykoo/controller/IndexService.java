@@ -25,17 +25,21 @@ public class IndexService {
 		tmpparas = parasService.selectMember("minReserveWeekCount");
 		int minWeekCount = Integer.parseInt(tmpparas.getValue());
 		
+		//2019-07-01 修复查询出去年同样周数约课记录的问题
+		Paras paraDate = parasService.selectMember("currentDate");
+		String currentDateStr = paraDate.getValue();
+		
 		String sql_1 = "select sum(weekReserveCount) from student";
 		String sql_2 = "select sum(disableCourseCount) as id from student";
 		String sql_3 = "select sum(stuNumber) as id from courseTable where weekCount="+weekCount;
 		String sql_4 = "select sum(stuNumber) as id from courseTable where weekCount>="+minWeekCount+" and weekCount<="+maxWeekCount;
-		String sql_5 = "select count(*) as id from reserveCourse where status='已预约' and weekCount="+weekCount;
-		String sql_6 = "select count(*) as id from reserveCourse where status='上课中' and weekCount="+weekCount;
-		String sql_7 = "select count(*) as id from reserveCourse where status='未确认' and weekCount="+weekCount;
-		String sql_8 = "select count(*) as id from reserveCourse where status='已确认' and weekCount="+weekCount;
-		String sql_9 = "select count(*) as id from reserveCourse where status='已预约' and weekCount>="+minWeekCount+" and weekCount<="+maxWeekCount;
-		String sql_10 = "select count(*) as id from reserveCourse where status='未确认' and weekCount>="+minWeekCount+" and weekCount<="+maxWeekCount;
-		String sql_11 = "select count(*) as id from reserveCourse where status='已确认' and weekCount>="+minWeekCount+" and weekCount<="+maxWeekCount;
+		String sql_5 = "select count(*) as id from reserveCourse where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and status='已预约' and weekCount="+weekCount;
+		String sql_6 = "select count(*) as id from reserveCourse where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and status='上课中' and weekCount="+weekCount;
+		String sql_7 = "select count(*) as id from reserveCourse where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and status='未确认' and weekCount="+weekCount;
+		String sql_8 = "select count(*) as id from reserveCourse where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and status='已确认' and weekCount="+weekCount;
+		String sql_9 = "select count(*) as id from reserveCourse where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and status='已预约' and weekCount>="+minWeekCount+" and weekCount<="+maxWeekCount;
+		String sql_10 = "select count(*) as id from reserveCourse where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and status='未确认' and weekCount>="+minWeekCount+" and weekCount<="+maxWeekCount;
+		String sql_11 = "select count(*) as id from reserveCourse where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and status='已确认' and weekCount>="+minWeekCount+" and weekCount<="+maxWeekCount;
 		
 		Map<String,Integer> maps = new HashMap<>();
 		List<Object> sql_1_str = Db.query(sql_1);

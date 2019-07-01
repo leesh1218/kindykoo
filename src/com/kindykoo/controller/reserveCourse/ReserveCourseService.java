@@ -45,14 +45,18 @@ public class ReserveCourseService {
 	public Page<ReserveCourse> paginate(int pageNumber, int pageSize, String keyword, String courseTime,String course, String weekCount, String week, String status,String minReserveWeekCount,String maxReserveWeekCount){
 		String table = "reserveCourse";
 		
+		//2019-07-01 修复查询出去年同样周数约课记录的问题
+		Paras paraDate = parasService.selectMember("currentDate");
+		String currentDateStr = paraDate.getValue();
+		
 		StringBuilder where = new StringBuilder();
 		if(StrKit.notBlank(status)){
 			where.append(" status = '").append(status).append("'");
 		}
 		if(StrKit.notBlank(weekCount)){
-			if(Integer.parseInt(weekCount) < Integer.parseInt(minReserveWeekCount)) {
-				table = "reserveCourseHistory";
-			}
+//			if(Integer.parseInt(weekCount) < Integer.parseInt(minReserveWeekCount)) {
+//				table = "reserveCourseHistory";
+//			}
 			if(where.length() > 0){
 				where.append(" and ");
 			}
@@ -89,7 +93,7 @@ public class ReserveCourseService {
 			where.insert(0, " from "+table+" where ");
 			where.append(" order by courseTime,course asc");
 		}else{
-			where.append("from "+table+" where weekCount<= ").append(maxReserveWeekCount).append(" and weekCount>= ").append(minReserveWeekCount).append(" order by id desc");
+			where.append("from "+table+" where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and weekCount<= ").append(maxReserveWeekCount).append(" and weekCount>= ").append(minReserveWeekCount).append(" order by id desc");
 		}
 		System.out.println(where.toString());
 		return dao.paginate(pageNumber, pageSize, "select * ", where.toString());
@@ -123,18 +127,21 @@ public class ReserveCourseService {
 	}
 
 	public List<ReserveCourse> selectMember(ReserveCourse reserveCourse,String flag) {
+		//2019-07-01 修复查询出去年同样周数约课记录的问题
+		Paras paraDate = parasService.selectMember("currentDate");
+		String currentDateStr = paraDate.getValue();
 		String sql = "";
 		if("qryCourse".equals(flag)){
 			if(reserveCourse.getStatus()!=null && !"".equals(reserveCourse.getStatus())){
 				if(reserveCourse.getTeacher2() != null && !"".equals(reserveCourse.getTeacher2())){//老师查看请假学生
-					sql = "select * from reserveCourse where status='"+reserveCourse.getStatus()+"' and (teacher1='"+reserveCourse.getTeacher1()+"' or teacher2 ='"+reserveCourse.getTeacher2()+"') and weekCount="+reserveCourse.getWeekCount()+" order by date, studentName asc";
+					sql = "select * from reserveCourse where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and status='"+reserveCourse.getStatus()+"' and (teacher1='"+reserveCourse.getTeacher1()+"' or teacher2 ='"+reserveCourse.getTeacher2()+"') and weekCount="+reserveCourse.getWeekCount()+" order by date, studentName asc";
 				}else if("已预约".equals(reserveCourse.getStatus())){//家长查看学生已预约课程 date>now()
-					sql = "select * from reserveCourse where phone='"+reserveCourse.getPhone()+"' and date>now() and status='"+reserveCourse.getStatus()+"' and studentName='"+reserveCourse.getStudentName()+"' and weekCount="+reserveCourse.getWeekCount()+" order by date, studentName asc";
+					sql = "select * from reserveCourse where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and phone='"+reserveCourse.getPhone()+"' and date>now() and status='"+reserveCourse.getStatus()+"' and studentName='"+reserveCourse.getStudentName()+"' and weekCount="+reserveCourse.getWeekCount()+" order by date, studentName asc";
 				}else if("已请假".equals(reserveCourse.getStatus())){
-					sql = "select * from reserveCourse where phone='"+reserveCourse.getPhone()+"' and status='"+reserveCourse.getStatus()+"' and studentName='"+reserveCourse.getStudentName()+"' and weekCount="+reserveCourse.getWeekCount()+" order by date, studentName asc";
+					sql = "select * from reserveCourse where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and phone='"+reserveCourse.getPhone()+"' and status='"+reserveCourse.getStatus()+"' and studentName='"+reserveCourse.getStudentName()+"' and weekCount="+reserveCourse.getWeekCount()+" order by date, studentName asc";
 				}
 			}else{//家长查看所有预约课程
-				sql = "select * from reserveCourse where phone='"+reserveCourse.getPhone()+"' and studentName='"+reserveCourse.getStudentName()+"' and weekCount="+reserveCourse.getWeekCount()+" and status != '已请假'"+" order by date asc";
+				sql = "select * from reserveCourse where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and phone='"+reserveCourse.getPhone()+"' and studentName='"+reserveCourse.getStudentName()+"' and weekCount="+reserveCourse.getWeekCount()+" and status != '已请假'"+" order by date asc";
 			}
 		}else if("reserveOrFixedCourse".equals(flag)){
 			sql = "select * from reserveCourse where phone='"+reserveCourse.getPhone()+"' and status = '已预约' and studentName='"+reserveCourse.getStudentName()+"' and courseTableID="+reserveCourse.getCourseTableID();
@@ -147,7 +154,7 @@ public class ReserveCourseService {
 		}else if("courseDetail".equals(flag)){
 			sql = "select * from reserveCourse where status in ('已预约','上课中') and courseTableID="+reserveCourse.getCourseTableID()+" order by date, studentName asc";
 		}else if("repeatReserve".equals(flag)){
-			sql = "select * from reserveCourse where phone='"+reserveCourse.getPhone()+"' and status != '已请假' and studentName='"+reserveCourse.getStudentName()+"' and course='"+reserveCourse.getCourse()+"' and weekCount = "+reserveCourse.getWeekCount();
+			sql = "select * from reserveCourse where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and phone='"+reserveCourse.getPhone()+"' and status != '已请假' and studentName='"+reserveCourse.getStudentName()+"' and course='"+reserveCourse.getCourse()+"' and weekCount = "+reserveCourse.getWeekCount();
 		}else if ("test".equals(flag)){
 			sql = "select * from reserveCourse where phone='"+reserveCourse.getPhone()+"' and studentName='"+reserveCourse.getStudentName()+"' and status not in ('已请假','已确认')";
 		}else if ("updatePhone".equals(flag)){
@@ -155,17 +162,17 @@ public class ReserveCourseService {
 		}else if ("reserveCourseCore1".equals(flag)){
 			sql = "select * from reserveCourse where phone='"+reserveCourse.getPhone()+"' and status = '已预约' and studentName='"+reserveCourse.getStudentName()+"' and week='"+reserveCourse.getWeek()+"' and courseTime='"+reserveCourse.getCourseTime()+"' and course='"+reserveCourse.getCourse()+"'";
 		}else if ("reserveCourseCore2".equals(flag)){
-			sql = "select * from reserveCourse where phone='"+reserveCourse.getPhone()+"' and status = '已预约' and studentName='"+reserveCourse.getStudentName()+"' and weekCount="+reserveCourse.getWeekCount();
+			sql = "select * from reserveCourse where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and phone='"+reserveCourse.getPhone()+"' and status = '已预约' and studentName='"+reserveCourse.getStudentName()+"' and weekCount="+reserveCourse.getWeekCount();
 		}else if("doSubmit".equals(flag)) {
-			sql = "select * from reserveCourse where weekCount = "+reserveCourse.getWeekCount()+" and week='"+reserveCourse.getWeek()+"' and courseTime='"+reserveCourse.getCourseTime()+"' and course='"+reserveCourse.getCourse()+"'";
+			sql = "select * from reserveCourse where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and weekCount = "+reserveCourse.getWeekCount()+" and week='"+reserveCourse.getWeek()+"' and courseTime='"+reserveCourse.getCourseTime()+"' and course='"+reserveCourse.getCourse()+"'";
 		}else if("doSubmit_phone".equals(flag)) {
 			sql = "select * from reserveCourse where status not in ('已请假','已确认') and studentName='"+reserveCourse.getStudentName()+"' and phone='"+reserveCourse.getPhone()+"'";
 		}else if("reserveCourseFixedCondition".equals(flag)) {
 			Paras paras = parasService.selectMember("maxReserveWeekCount");
 			int maxReserveWeekCount = Integer.parseInt(paras.getValue());
-			sql = "select * from reserveCourse where studentName='"+reserveCourse.getStudentName()+"' and phone='"+reserveCourse.getPhone()+"' and week='"+reserveCourse.getWeek()+"' and courseTime='"+reserveCourse.getCourseTime()+"' and course='"+reserveCourse.getCourse()+"' and operator='"+reserveCourse.getOperator()+"' and reserveType='"+reserveCourse.getReserveType()+"' and weekCount>="+reserveCourse.getWeekCount()+" and weekCount<="+maxReserveWeekCount;
+			sql = "select * from reserveCourse where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and studentName='"+reserveCourse.getStudentName()+"' and phone='"+reserveCourse.getPhone()+"' and week='"+reserveCourse.getWeek()+"' and courseTime='"+reserveCourse.getCourseTime()+"' and course='"+reserveCourse.getCourse()+"' and operator='"+reserveCourse.getOperator()+"' and reserveType='"+reserveCourse.getReserveType()+"' and weekCount>="+reserveCourse.getWeekCount()+" and weekCount<="+maxReserveWeekCount;
 		}else if("enableCourseCore".equals(flag)) {
-			sql = "select * from reserveCourse where status in ('已预约','上课中') and week='"+reserveCourse.getWeek()+"' and courseTime='"+reserveCourse.getCourseTime()+"' and course='"+reserveCourse.getCourse()+"' and weekCount="+reserveCourse.getWeekCount()+" and teacher1='"+reserveCourse.getTeacher1()+"'";
+			sql = "select * from reserveCourse where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and status in ('已预约','上课中') and week='"+reserveCourse.getWeek()+"' and courseTime='"+reserveCourse.getCourseTime()+"' and course='"+reserveCourse.getCourse()+"' and weekCount="+reserveCourse.getWeekCount()+" and teacher1='"+reserveCourse.getTeacher1()+"'";
 		}
 		List<ReserveCourse> reserveCourses = dao.find(sql);
 		if(reserveCourses == null || reserveCourses.size() == 0)
@@ -558,7 +565,11 @@ public class ReserveCourseService {
 	 */
 	public List<ReserveCourse> getStudentNameByWeekCount( String status, int weekCount) {
 		
-		String sql = "select DISTINCT(phone),studentName from reserveCourse where status in ('已预约','上课中','未确认','已确认') and weekCount="+weekCount;
+		//2019-07-01 修复查询出去年同样周数约课记录的问题
+		Paras paraDate = parasService.selectMember("currentDate");
+		String currentDateStr = paraDate.getValue();
+		
+		String sql = "select DISTINCT(phone),studentName from reserveCourse where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and status in ('已预约','上课中','未确认','已确认') and weekCount="+weekCount;
 		List<ReserveCourse> reserveCourses = dao.find(sql);
 		if(reserveCourses != null && reserveCourses.size() > 0){
 			return reserveCourses;
@@ -568,7 +579,11 @@ public class ReserveCourseService {
 	
 	public List<ReserveCourse> getStudentNameFixedCondition(int weekCount) {
 		
-		String sql = "select * from reserveCourse where reserveType='固定课' and weekCount="+weekCount;
+		//2019-07-01 修复查询出去年同样周数约课记录的问题
+		Paras paraDate = parasService.selectMember("currentDate");
+		String currentDateStr = paraDate.getValue();
+		
+		String sql = "select * from reserveCourse where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and reserveType='固定课' and weekCount="+weekCount;
 		List<ReserveCourse> reserveCourses = dao.find(sql);
 		if(reserveCourses != null && reserveCourses.size() > 0){
 			return reserveCourses;
@@ -577,7 +592,12 @@ public class ReserveCourseService {
 	}
 
 	public int getWeekReserveCount(int weekCount, ReserveCourse reserveCourse) {
-		String sql = "select * from reserveCourse where phone='"+reserveCourse.getPhone()+"' and studentName='"+reserveCourse.getStudentName()+"' and status='已预约' and weekCount="+weekCount;
+		
+		//2019-07-01 修复查询出去年同样周数约课记录的问题
+		Paras paraDate = parasService.selectMember("currentDate");
+		String currentDateStr = paraDate.getValue();
+		
+		String sql = "select * from reserveCourse where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and phone='"+reserveCourse.getPhone()+"' and studentName='"+reserveCourse.getStudentName()+"' and status='已预约' and weekCount="+weekCount;
 		List<ReserveCourse> reserveCourses = dao.find(sql);
 		if(reserveCourses != null && reserveCourses.size() > 0){
 			return reserveCourses.size();
@@ -586,7 +606,11 @@ public class ReserveCourseService {
 	}
 	
 	public int getWeekReserveCountTest(int weekCount, ReserveCourse reserveCourse) {
-		String sql = "select * from reserveCourse where phone='"+reserveCourse.getPhone()+"' and studentName='"+reserveCourse.getStudentName()+"' and status in ('已预约','上课中','未确认','已确认') and weekCount="+weekCount;
+		//2019-07-01 修复查询出去年同样周数约课记录的问题
+		Paras paraDate = parasService.selectMember("currentDate");
+		String currentDateStr = paraDate.getValue();
+				
+		String sql = "select * from reserveCourse where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and phone='"+reserveCourse.getPhone()+"' and studentName='"+reserveCourse.getStudentName()+"' and status in ('已预约','上课中','未确认','已确认') and weekCount="+weekCount;
 		List<ReserveCourse> reserveCourses = dao.find(sql);
 		if(reserveCourses != null && reserveCourses.size() > 0){
 			return reserveCourses.size();
@@ -595,7 +619,12 @@ public class ReserveCourseService {
 	}
 	
 	public int getDisableCourseCountTest(int minReserveWeekCount, int maxReserveWeekCount, ReserveCourse reserveCourse) {
-		String sql = "select * from reserveCourse where phone='"+reserveCourse.getPhone()+"' and studentName='"+reserveCourse.getStudentName()+"' and status in ('已预约','上课中','未确认') and weekCount>="+minReserveWeekCount+" and weekCount<="+maxReserveWeekCount;
+		
+		//2019-07-01 修复查询出去年同样周数约课记录的问题
+		Paras paraDate = parasService.selectMember("currentDate");
+		String currentDateStr = paraDate.getValue();
+		
+		String sql = "select * from reserveCourse where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and phone='"+reserveCourse.getPhone()+"' and studentName='"+reserveCourse.getStudentName()+"' and status in ('已预约','上课中','未确认') and weekCount>="+minReserveWeekCount+" and weekCount<="+maxReserveWeekCount;
 		List<ReserveCourse> reserveCourses = dao.find(sql);
 		if(reserveCourses != null && reserveCourses.size() > 0){
 			return reserveCourses.size();
@@ -631,11 +660,12 @@ public class ReserveCourseService {
 		return dao.findById(id);
 	}
 
-	public void moveReserveCourseHistory(int maxWeekCount) {
+	public void moveReserveCourseHistory(int maxWeekCount, String currentDateStr) {
+		
 		int i=0,j=0;
-		i = Db.update("insert into reserveCourseHistory (select * from reserveCourse where weekCount>="+(maxWeekCount-3)+" and weekCount<="+maxWeekCount+")");
+		i = Db.update("insert into reserveCourseHistory (select * from reserveCourse where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and weekCount>="+(maxWeekCount-3)+" and weekCount<="+maxWeekCount+")");
 		if(i != 0) {
-			//j = Db.update("delete from reserveCourse where weekCount>="+(maxWeekCount-3)+" and weekCount<="+maxWeekCount);
+			//j = Db.update("delete from reserveCourse where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and weekCount>="+(maxWeekCount-3)+" and weekCount<="+maxWeekCount);
 		}
 		System.out.println("InitWeekReserveCount.moveReserveCourseHistory i="+i+" j="+j);
 	}

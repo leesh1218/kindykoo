@@ -40,6 +40,10 @@ public class InitWeekReserveCount implements Runnable {
 		int weekCount = ToolClass.getWeekCount(new Date());
 		Paras paras = parasService.selectMember("maxReserveWeekCount");
 		int maxWeekCount = Integer.parseInt(paras.getValue());
+		
+		//2019-07-01 修复查询出去年同样周数约课记录的问题
+		Paras paraDate = parasService.selectMember("currentDate");
+		String currentDateStr = paraDate.getValue();
 	
 //		String sql1 = "update student set enable=1 where weekReserveCount=weekMaxCount";
 		String sql1 = "update student set enable=1,weekReserveCount=0";
@@ -97,7 +101,7 @@ public class InitWeekReserveCount implements Runnable {
 			}
 			
 			//讲本阶段四周课程移至历史表
-			reserveCourseService.moveReserveCourseHistory(maxWeekCount);
+			reserveCourseService.moveReserveCourseHistory(maxWeekCount,currentDateStr);
 			int count = parasService.updateWeekCount();
 			if(count == 2){
 				info = "weekCount="+weekCount+" minReserveWeekCount and maxReserveWeekCount updated success";
