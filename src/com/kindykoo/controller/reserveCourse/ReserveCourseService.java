@@ -100,6 +100,77 @@ public class ReserveCourseService {
 	}
 	
 	/**
+	 * 查询课程约课详情单独出来
+	 * 2019-07-14
+	 * @param pageNumber
+	 * @param pageSize
+	 * @param courseTableId
+	 * @param courseTime
+	 * @param course
+	 * @param weekCount
+	 * @param week
+	 * @param status
+	 * @param minReserveWeekCount
+	 * @param maxReserveWeekCount
+	 * @return
+	 */
+	public Page<ReserveCourse> paginate2(int pageNumber, int pageSize, String courseTableId, String courseTime,String course, String weekCount, String week, String status,String minReserveWeekCount,String maxReserveWeekCount){
+		String table = "reserveCourse";
+		
+		//2019-07-01 修复查询出去年同样周数约课记录的问题
+		Paras paraDate = parasService.selectMember("currentDate");
+		String currentDateStr = paraDate.getValue();
+		
+		StringBuilder where = new StringBuilder();
+		if(StrKit.notBlank(status)){
+			where.append(" status = '").append(status).append("'");
+		}
+		if(StrKit.notBlank(weekCount)){
+//			if(Integer.parseInt(weekCount) < Integer.parseInt(minReserveWeekCount)) {
+//				table = "reserveCourseHistory";
+//			}
+			if(where.length() > 0){
+				where.append(" and ");
+			}
+			where.append(" weekCount = ").append(weekCount);
+		}
+		if(StrKit.notBlank(week)){
+			if(where.length() > 0){
+				where.append(" and ");
+			}
+			where.append(" week = '").append(week).append("'");
+		}
+		
+		if(StrKit.notBlank(courseTableId)){
+			if(where.length() > 0){
+				where.append(" and ");
+			}
+			where.append(" courseTableID = '").append(courseTableId).append("'");
+		}
+		
+		if(StrKit.notBlank(courseTime)){
+			if(where.length() > 0){
+				where.append(" and ");
+			}
+			where.append(" courseTime = '").append(courseTime).append("'");
+		}
+		if(StrKit.notBlank(course)){
+			if(where.length() > 0){
+				where.append(" and ");
+			}
+			where.append(" course = '").append(course).append("'");
+		}
+		if(where.length()>0){
+			where.insert(0, " from "+table+" where ");
+			where.append(" order by courseTime,course asc");
+		}else{
+			where.append("from "+table+" where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and weekCount<= ").append(maxReserveWeekCount).append(" and weekCount>= ").append(minReserveWeekCount).append(" order by id desc");
+		}
+		System.out.println(where.toString());
+		return dao.paginate(pageNumber, pageSize, "select * ", where.toString());
+	}
+	
+	/**
 	 * 查询预约课程详情
 	 * @param id
 	 * @return

@@ -118,6 +118,14 @@
 	        title: '上课时间',
                align: 'center'
 	    },{
+	        field: 'beginTime',
+	        title: '开始时间',
+               align: 'center'
+	    },{
+	        field: 'endTime',
+	        title: '结束时间',
+               align: 'center'
+	    },{
 	        field: 'updateTime',
 	        title: '修改时间',
                align: 'center',
@@ -141,7 +149,8 @@
                title: '操作',
                align: 'center',
                events: operateEvents,
-               formatter: operateFormatter
+               formatter: operateFormatter,
+               visible: false
            }],
            onResetView: function(){
         	   $("[data-toggle='tooltip']").tooltip();

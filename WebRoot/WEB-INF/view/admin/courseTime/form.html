@@ -11,7 +11,19 @@
 	<div class="form-group">
 		<label class="control-label col-sm-2">上课时间</label>
 		<div class="col-sm-6">
-			<input type="text" data-rule="required;" placeholder="请输入上课时间" data-tip="输入格式：09:00～09:55" class="form-control" value="#(courseTime.time??)" name="courseTime.time" />
+			<input type="text" id="time" readonly="readonly" data-rule="required;" placeholder="根据开始时间和结束时间自动生成上课时间" data-tip="输入格式：09:00～09:55" class="form-control" value="#(courseTime.time??)" name="courseTime.time" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">开始时间</label>
+		<div class="col-sm-6">
+			<input type="text" id="beginTime" data-rule="required;" onchange="getTime1()" class="form-control" value="#(courseTime.beginTime??)" name="courseTime.beginTime" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">结束时间</label>
+		<div class="col-sm-6">
+			<input type="text" id="endTime" data-rule="required;" onchange="getTime2()" class="form-control" value="#(courseTime.endTime??)" name="courseTime.endTime" />
 		</div>
 	</div>
 	<div class="form-group">
@@ -25,7 +37,64 @@
 #define js()
 <script type="text/javascript">
 
+	$(function(){
+		$("#time").val("00:00～00:00");
+	})
+
+	function getTime1(){
+		var beginTime = $("#beginTime").val();
+		if(beginTime == ''){
+			return;
+		}
+		var time = $("#time").val();
+		var newstr = time.replace(time.substring(0,time.indexOf("～")),beginTime.substring(0,5));
+		$("#time").val(newstr);
+	}
+	function getTime2(){
+		var endTime = $("#endTime").val();
+		if(endTime == ''){
+			return;
+		}
+		var time = $("#time").val();
+		var newstr = time.replace(time.substring((time.indexOf("～")+1),11),endTime.substring(0,5));
+		$("#time").val(newstr);
+	}
+
+	function checkTimeTextFormate(){
+		getTime1();
+		getTime2();
+		var time = $("#time").val();
+		if(time.length != 11){//09:00～09:45
+			layer.msg("输入上课时间长度不对，请按照提示格式输入!", {icon: 5, time:2000});
+			return false;
+		}
+		
+		var h1 = parseInt(time.substring(0,2));
+		var h2 = parseInt(time.substring(6,8));
+		var m1 = parseInt(time.substring(3,5));
+		var m2 = parseInt(time.substring(9,11));
+		
+		if(h1 > h2 || (h1 == h2 && m1 >= m2 )){
+			return false;
+		}
+		return true;
+	}
+	
+	laydate.render({
+		  elem: '#beginTime', //指定元素
+		  type: 'time'
+	});
+	
+	laydate.render({
+		  elem: '#endTime', //指定元素
+		  type: 'time'
+	});
+	
 	function submitThisForm(){
+		if(!checkTimeTextFormate()){
+			layer.msg("开始时间必须小于结束时间!", {icon: 5, time:2000});
+			return;
+		}
 		$("#form").submit();
 	}
 </script>

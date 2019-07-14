@@ -2,8 +2,8 @@
 #define main()
 <div id="toolbar">
 	<div class="form-inline" role="form">
-			<div class="form-group">
-           		<input placeholder="姓名查询" value="#(keywords??)" id="keywords" style="width:90px;" name="keywords" type="text" onchange="refreshThisTable()" class="form-control" />
+		   <div class="form-group">
+           		<input placeholder="课程编号" id="courseTableId" style="width:100px;" name="courseTableId" value="#(courseTableId)" type="text" class="form-control" />
            </div>
            <div class="form-group">
            		<select class="form-control" id="weekCount" name="weekCount" onchange="refreshThisTable()">
@@ -140,7 +140,7 @@
 		pagination: true,
 		striped: true,
 		sidePagination: "server",
-		url: "admin/reserveCourse/list",
+		url: "admin/reserveCourse/list2",
 		height:550,
 		pageList:[5, 10, 15, 20, 30, 50],
 	    columns: [{
@@ -273,17 +273,7 @@
 		table.bootstrapTable('resetView');
 	}, 100);
 	
-	$(".form-inline").append("<button data-toggle='tooltip' id='resetBtn' class='btn btn-info btn-md'>显示全部</button>");
 	$(".form-inline").append("&nbsp;");
-	
-	$("#resetBtn").on("click", function(){
-		$("#weekCount").val("");
-		$("#week").val("");
-		$("#courseTime").val("");
-		$("#course").val("");
-		$("#status").val("");
-		refreshThisTable();
-	});
 	
 	function statusChange(e){
 		var status = e.value;
@@ -311,6 +301,10 @@
 		}
 		refreshThisTable()
 	}
+	
+	$(function(){
+		$("#courseTableId").hide();
+	})
 	
 </script>
 #end

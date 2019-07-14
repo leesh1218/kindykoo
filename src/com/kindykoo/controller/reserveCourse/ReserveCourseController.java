@@ -119,13 +119,15 @@ public class ReserveCourseController extends Controller {
 		//从参数表获取maxReserveWeekCount的值
 		Paras paras1 = parasService.selectMember("minReserveWeekCount");
 		minReserveWeekCount = Integer.parseInt(paras1.getValue());
-		String keywords = getPara("keywords");
+//		String keywords = getPara("keywords");
+		String id = getPara("id");
 		String weekCount = getPara("weekCount");
 		String week = getPara("week");
 		String courseTime = getPara("courseTime");
 		String course = getPara("course");
 		String status = getPara("status");
-		setAttr("keywords", keywords);
+//		setAttr("keywords", keywords);
+		setAttr("courseTableId", id);
 		if(weekCount!=null && !"".equals(weekCount.trim())) {
 			setAttr("weekCount1", Integer.parseInt(weekCount)-minReserveWeekCount);
 		}
@@ -1080,6 +1082,34 @@ public class ReserveCourseController extends Controller {
 		int pageNumber = offset/pageSize+1;
 		Paras paras = parasService.selectMember("maxReserveWeekCount");
 		Page<ReserveCourse> coursePageData = service. paginate(pageNumber, pageSize, keyword, courseTime,course, weekCount, week,status,paras1.getValue(),paras.getValue());
+		setAttr("total", coursePageData.getTotalRow());
+		setAttr("rows", coursePageData.getList());
+		renderJson(); 
+	}
+	
+	/**
+	 * 查询课程约课数据
+	 */
+	public void list2(){
+		Integer pageSize = getParaToInt("limit", 10);
+		int offset = getParaToInt("offset", 0);
+		String courseTableId = getPara("courseTableId");
+		String courseTime = getPara("courseTime");
+		String course = getPara("course");
+		String status = getPara("status");
+		String realWeekCount = getPara("realWeekCount");
+		String weekCount = getPara("weekCount");
+		Paras paras1 = parasService.selectMember("minReserveWeekCount");
+		if(weekCount != null && !"".equals(weekCount)){
+			weekCount = Integer.parseInt(paras1.getValue())+Integer.parseInt(getPara("weekCount"))+"";
+		}
+		if(realWeekCount != null && !"".equals(realWeekCount)){
+			weekCount = realWeekCount;
+		}
+		String week = getPara("week");
+		int pageNumber = offset/pageSize+1;
+		Paras paras = parasService.selectMember("maxReserveWeekCount");
+		Page<ReserveCourse> coursePageData = service. paginate2(pageNumber, pageSize, courseTableId, courseTime,course, weekCount, week,status,paras1.getValue(),paras.getValue());
 		setAttr("total", coursePageData.getTotalRow());
 		setAttr("rows", coursePageData.getList());
 		renderJson(); 
