@@ -144,6 +144,36 @@ public class ReserveCourseController extends Controller {
 		render("condition.html");
 	}
 	
+	/**
+	 * 会员查看约课情况单独出来
+	 */
+	public void condition2() {
+		//从参数表获取maxReserveWeekCount的值
+		Paras paras1 = parasService.selectMember("minReserveWeekCount");
+		minReserveWeekCount = Integer.parseInt(paras1.getValue());
+		String keywords = getPara("keywords");
+		String weekCount = getPara("weekCount");
+		String week = getPara("week");
+		String courseTime = getPara("courseTime");
+		String course = getPara("course");
+		String status = getPara("status");
+		setAttr("keywords", keywords);
+		if(weekCount!=null && !"".equals(weekCount.trim())) {
+			setAttr("weekCount1", Integer.parseInt(weekCount)-minReserveWeekCount);
+		}
+		setAttr("week1", week);
+		setAttr("courseTime1", courseTime);
+		setAttr("course1", course);
+		setAttr("status1", status);
+		setAttr("weekCounts", weekCounts);
+		setAttr("weeks", weeks);
+		List<CourseTime> courseTimes = courseTimeService.getAllCourseTime();
+		setAttr("courseTimes", courseTimes);
+		List<Course> courses = courseService.getAllCourse();
+		setAttr("courses", courses);
+		render("condition2.html");
+	}
+	
 	public void reserveCourseAdmin(){
 		String babyName = getPara("babyName");
 		String phone = getPara("phone");

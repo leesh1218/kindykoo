@@ -1,0 +1,316 @@
+#@innerLayout()
+#define main()
+<div id="toolbar">
+	<div class="form-inline" role="form">
+			<div class="form-group">
+           		<input placeholder="姓名查询" value="#(keywords??)" id="keywords" style="width:90px;" name="keywords" type="text" onchange="refreshThisTable()" class="form-control" />
+           </div>
+           <div class="form-group">
+           		<select class="form-control" id="weekCount" name="weekCount" onchange="refreshThisTable()">
+           			<option value="">周数</option>
+           			#for(weekCount : weekCounts)
+						<option #((weekCount1!=null && weekCount1==for.index)?"selected":"") value="#(for.index)">#(weekCount)</option>
+					#end
+           		</select>
+           </div>
+           <div class="form-group">
+           		<select class="form-control" id="week" name="week" onchange="refreshThisTable()">
+           			<option value="">星期</option>
+           			#for(week : weeks)
+						<option #((week1!=null && week1==week)?"selected":"") value="#(week)">#(week)</option>
+					#end
+           		</select>
+           </div>
+           <div class="form-group">
+           		<select class="form-control" id="courseTime" name="courseTime" onchange="refreshThisTable()">
+           			<option value="">上课时间</option>
+           			#for(courseTime : courseTimes)
+						<option #((courseTime1!=null && courseTime1==courseTime.time)?"selected":"") value="#(courseTime.time)">#(courseTime.time)</option>
+					#end
+           		</select>
+           </div>
+           <div class="form-group">
+           		<select class="form-control" id="course" name="course" onchange="refreshThisTable()">
+           			<option value="">课程</option>
+           			#for(course : courses)
+						<option #((course1!=null && course1==course.name)?"selected":"") value="#(course.name)">#(course.name)</option>
+					#end
+           		</select>
+           </div>
+           <div class="form-group">
+           		<select class="form-control" id="status" name="status" onchange="statusChange(this)">
+           			<option value="">课程状态</option>
+           			<option #((status1!=null && status1=='未上课')?"selected":"") value="已预约">已预约</option>
+           			<option value="已请假">已请假</option>
+           			<option #((status1!=null && status1=='上课中')?"selected":"") value="上课中">上课中</option>
+           			<option #((status1!=null && status1=='未确认')?"selected":"") value="未确认">未确认</option>
+           			<option #((status1!=null && status1=='已确认')?"selected":"") value="已确认">已确认</option>
+           		</select>
+           </div>
+           <button id="searchBtn" class="btn btn-primary btn-md">查询</button>
+          </div>
+      </div>
+<table id="table"
+	data-toolbar="#toolbar"
+           	data-show-refresh="true"
+            	data-show-toggle="false"
+           	data-show-columns="true"
+            	data-query-params="queryParams"></table>
+#end
+#define js()
+<script type="text/javascript">
+	var table = $('#table');
+	window.statusEvents = {
+			'click .disable':function(e, value, row, index){
+				layer.confirm('确认请假该节课程吗?', {icon: 3, title:'请确认'}, function(index){
+					var loadIndex = layer.load();
+					$.ajax({
+						type: "post",
+						dataType: "json",
+						url: "admin/reserveCourse/enableAdmin/",
+						data: {
+							id: row.id,
+							babyName: row.studentName,
+							phone: row.phone,
+							operator: row.operator
+						},
+						success: function(ret){
+							if(ret.isOk){
+								layer.close(loadIndex);
+								layer.msg('请假成功！', {icon: 1, time:1000});
+								refreshThisTable();
+							}
+						}
+					
+					})
+				});
+			},
+			'click .confirm':function(e, value, row, index){
+				layer.confirm('您是否要确认课程并扣除课时？', {
+					  btn: ['已上课','未上课'] //按钮
+					}, function(){
+						confirmAdmin(row,"已上课");
+					}, function(){
+						confirmAdmin(row,"未上课");
+					});
+			}
+		};
+	
+	function confirmAdmin(row,status){
+		var loadIndex = layer.load();
+		$.ajax({
+			type: "post",
+			dataType: "json",
+			url: "admin/reserveCourse/confirmAdmin/",
+			data: {
+				id: row.id,
+				babyName: row.studentName,
+				phone: row.phone,
+				operator: row.operator,
+				status:status
+			},
+			success: function(ret){
+				layer.close(loadIndex);
+				if(ret.isOk){
+					layer.msg('确认课程并扣除课时成功！', {icon: 1, time:2000});
+				}else{
+					layer.msg('确认课程并扣除课时失败！', {icon: 5, time:2000});
+				}
+				refreshThisTable();
+			}
+		})
+	}
+	
+	function refreshThisTable(){
+		table.bootstrapTable('refresh');
+	}
+	
+	$("#searchBtn").on("click", function(){
+		refreshThisTable();
+	});
+	
+	function queryParams(params) {
+        $('#toolbar').find('input,select').each(function () {
+            params[$(this).attr('name')] = $(this).val();
+        });
+        return params;
+    }
+	
+	table.bootstrapTable({
+		pagination: true,
+		striped: true,
+		sidePagination: "server",
+		url: "admin/reserveCourse/list",
+		height:550,
+		pageList:[5, 10, 15, 20, 30, 50],
+	    columns: [{
+	        field: 'index',
+	        title: '编号',
+               align: 'center'	,
+               formatter: indexFormatter
+	    }, {
+	        field: 'studentName',
+	        title: '学生',
+               align: 'center'
+	    },{
+	        field: 'weekCount',
+	        title: '周数',
+               align: 'center'
+	    },{
+	        field: 'week',
+	        title: '星期',
+               align: 'center'
+	    },{
+	        field: 'date',
+	        title: '上课时间',
+               align: 'center',
+               visible: false
+	    },{
+	        field: 'courseTime',
+	        title: '课程时间',
+               align: 'center'
+	    },{
+	        field: 'course',
+	        title: '课程',
+               align: 'center',
+               formatter: courseFormatter
+	    },{
+	        field: 'teacher1',
+	        title: '主教',
+               align: 'center'
+	    },{
+	        field: 'teacher2',
+	        title: '助教',
+               align: 'center',
+               visible: false
+	    },{
+	        field: 'reserveType',
+	        title: '约课类型',
+               align: 'center'
+	    },{
+	        field: 'operator',
+	        title: '预约人',
+               align: 'center'
+	    },{
+	        field: 'enableMan',
+	        title: '请假人',
+               align: 'center',
+               visible: false
+	    },{
+	        field: 'confirmMan',
+	        title: '确认人',
+               align: 'center',
+               visible: false
+	    },{
+	        field: 'phone',
+	        title: '手机',
+               align: 'center',
+               visible: false
+	    },{
+	        field: 'reserveTime',
+	        title: '预约时间',
+               align: 'center'
+	    },{
+	        field: 'enableTime',
+	        title: '请假时间',
+               align: 'center',
+               visible: false
+	    },{
+	        field: 'confirmTime',
+	        title: '确认时间',
+               align: 'center',
+               visible: false
+	    },{
+	        field: 'status',
+	        title: '课程状态',
+               align: 'center',
+               events: statusEvents,
+               formatter: statusFormatter
+	    },{
+	        field: 'present',
+	        title: '是否上课',
+               align: 'center',
+               formatter: presentFormatter
+	    }],
+           onResetView: function(){
+        	   $("[data-toggle='tooltip']").tooltip();
+        	   $("#addBtn").parent().find("[title]").tooltip();
+           }
+           
+	});
+	
+	function presentFormatter(value, row, index) {
+		var present;
+		if(value){
+			present = '已上课';
+		}else{
+			present = '未上课';
+		}
+        return [present].join('');
+	}
+	
+	function indexFormatter(value, row, index) {
+		var pageNumber = table.bootstrapTable('getOptions').pageNumber;  
+        var pageSize = table.bootstrapTable('getOptions').pageSize;  
+        return [(pageNumber-1) * pageSize+index+1].join('');
+    }
+	
+	function statusFormatter(value, row, index) {
+		var btn = '';
+		if(value == '已预约' || value == '上课中'){
+			btn = '<button data-toggle="tooltip" class="btn btn-danger btn-xs" data-placement="left" title="点击请假该节课"><span  class="glyphicon glyphicon-eye-close disable"></span></button>';
+		}else if(value == '未确认'){
+			btn = '<button data-toggle="tooltip" class="btn btn-info btn-xs" data-placement="left" title="点击确认课程并扣除课时"><span  class="glyphicon glyphicon-ok confirm"></span></button>';
+		}
+        return [value+' '+btn].join('');
+    }
+	
+	function courseFormatter(value, row, index){
+		return [value.replace("全脑开发课-","")].join('');
+	}
+	
+	setTimeout(function(){
+		table.bootstrapTable('resetView');
+	}, 100);
+	
+	$(".form-inline").append("<button data-toggle='tooltip' id='resetBtn' class='btn btn-info btn-md'>显示全部</button>");
+	$(".form-inline").append("&nbsp;");
+	
+	$("#resetBtn").on("click", function(){
+		$("#weekCount").val("");
+		$("#week").val("");
+		$("#courseTime").val("");
+		$("#course").val("");
+		$("#status").val("");
+		refreshThisTable();
+	});
+	
+	function statusChange(e){
+		var status = e.value;
+		if(status == '已请假'){
+			$('#table').bootstrapTable('showColumn', 'enableTime');
+			$('#table').bootstrapTable('hideColumn', 'reserveTime');
+			$('#table').bootstrapTable('hideColumn', 'confirmTime');
+			$('#table').bootstrapTable('showColumn', 'enableMan');
+			$('#table').bootstrapTable('hideColumn', 'operator');
+			$('#table').bootstrapTable('hideColumn', 'confirmMan');
+		}else if(status == '已确认'){
+			$('#table').bootstrapTable('hideColumn', 'enableTime');
+			$('#table').bootstrapTable('hideColumn', 'reserveTime');
+			$('#table').bootstrapTable('showColumn', 'confirmTime');
+			$('#table').bootstrapTable('hideColumn', 'enableMan');
+			$('#table').bootstrapTable('hideColumn', 'operator');
+			$('#table').bootstrapTable('showColumn', 'confirmMan');
+		}else{
+			$('#table').bootstrapTable('hideColumn', 'enableTime');
+			$('#table').bootstrapTable('showColumn', 'reserveTime');
+			$('#table').bootstrapTable('hideColumn', 'confirmTime');
+			$('#table').bootstrapTable('hideColumn', 'enableMan');
+			$('#table').bootstrapTable('showColumn', 'operator');
+			$('#table').bootstrapTable('hideColumn', 'confirmMan');
+		}
+		refreshThisTable()
+	}
+	
+</script>
+#end
