@@ -10,8 +10,8 @@
 			  <div class="panel-body">
 			    	  <!-- List group -->
 				  <div class="list-group">
-				    <a class="list-group-item">会员周本周约课总数<span class="badge">#(weekReserveCount_sum)</span></a>
-				    <a class="list-group-item">会员冻结课程总数<span class="badge">#(disableCourseCount_sum)</span></a>
+				    <a class="list-group-item">1A 会员周本周约课总数<span class="badge">#(weekReserveCount_sum)</span></a>
+				    <a class="list-group-item">1B 会员冻结课程总数<span class="badge">#(disableCourseCount_sum)</span></a>
 				  </div>
 			  </div>
 			</div>
@@ -26,8 +26,8 @@
 			  <div class="panel-body">
 			    	 <!-- List group -->
 					  <div class="list-group">
-					    <a class="list-group-item">课表本周约课总人数<span class="badge">#(stuNumber_sum)</span></a>
-					    <a class="list-group-item">课表本阶段约课总人数<span class="badge">#(stuNumber_sumAll)</span></a>
+					    <a class="list-group-item">2A 课表本周约课总人数<span class="badge">#(stuNumber_sum)</span></a>
+					    <a class="list-group-item">2B 课表本阶段约课总人数<span class="badge">#(stuNumber_sumAll)</span></a>
 					  </div>
 			  </div>
 			</div>
@@ -42,13 +42,34 @@
 			  <div class="panel-body">
 			    	<!-- List group -->
 				  <div class="list-group">
-				    <a class="list-group-item">约课表本周【已预约】状态人数<span class="badge">#(reserveCourse_sum)</span></a>
-				    <a class="list-group-item">约课表本周【上课中】状态人数<span class="badge">#(reserveCourse_sum_ing)</span></a>
-				    <a class="list-group-item">约课表本周【未确认】状态人数<span class="badge">#(reserveCourse_sum_ed)</span></a>
-				    <a class="list-group-item">约课表本周【已确认】状态人数<span class="badge">#(reserveCourse_sum_confirmed)</span></a>
-				    <a class="list-group-item">约课表本阶段【已预约】状态人数<span class="badge">#(reserveCourse_sumAll)</span></a>
-				    <a class="list-group-item">约课表本阶段【未确认】状态人数<span class="badge">#(reserveCourse_sum_edAll)</span></a>
-				    <a class="list-group-item">约课表本阶段【已确认】状态人数<span class="badge">#(reserveCourse_sum_confirmedAll)</span></a>
+				    <a class="list-group-item">3A 约课表本周【已预约】状态人数<span class="badge">#(reserveCourse_sum)</span></a>
+				    <a class="list-group-item">3B 约课表本周【上课中】状态人数<span class="badge">#(reserveCourse_sum_ing)</span></a>
+				    <a class="list-group-item">3C 约课表本周【未确认】状态人数<span class="badge">#(reserveCourse_sum_ed)</span></a>
+				    <a class="list-group-item">3D 约课表本周【已确认】状态人数<span class="badge">#(reserveCourse_sum_confirmed)</span></a>
+				    <a class="list-group-item">3E 约课表本阶段【已预约】状态人数<span class="badge">#(reserveCourse_sumAll)</span></a>
+				    <a class="list-group-item">3F 约课表本阶段【未确认】状态人数<span class="badge">#(reserveCourse_sum_edAll)</span></a>
+				    <a class="list-group-item">3G 约课表本阶段【已确认】状态人数<span class="badge">#(reserveCourse_sum_confirmedAll)</span></a>
+				  </div>
+			  </div>
+			</div>
+	</div>
+		
+		<div class="col-lg-6 col-sm-6 col-md-6">
+			<div class="panel panel-info">
+			  <!-- Default panel contents -->
+			  <div class="panel-heading">
+			  	<span class="summary_title">约课数据检查</span>
+			  </div>
+			  <div class="panel-body">
+			    	<!-- List group -->
+				  <div class="list-group">
+				    <a class="list-group-item #((weekReserveCount_sum - stuNumber_sum)!=0?"active":"")">1A-2A (课程约课人数是否异常)<span class="badge">#(weekReserveCount_sum - stuNumber_sum)</span></a>
+				    <a class="list-group-item #((weekReserveCount_sum-reserveCourse_sum-reserveCourse_sum_ing-reserveCourse_sum_ed-reserveCourse_sum_confirmed)!=0?"active":"")">1A-3A-3B-3C-3D (本周约课数据是否异常)<span class="badge">#(weekReserveCount_sum-reserveCourse_sum-reserveCourse_sum_ing-reserveCourse_sum_ed-reserveCourse_sum_confirmed)</span></a>
+				    <a class="list-group-item #((reserveCourse_sum_ed)!=0?"active":"")">3C (本周未确认人数)<span class="badge">#(reserveCourse_sum_ed)</span></a>
+				    <a class="list-group-item #((reserveCourse_sum_edAll-reserveCourse_sum_ed)!=0?"active":"")">3F-3C (前几周未确认人数)<span class="badge">#(reserveCourse_sum_edAll-reserveCourse_sum_ed)</span></a>
+				    <a class="list-group-item #((disableCourseCount_sum-reserveCourse_sumAll-reserveCourse_sum_edAll)!=0?"active":"")">1B-3E-3F (冻结课程是否异常)<span class="badge">#(disableCourseCount_sum-reserveCourse_sumAll-reserveCourse_sum_edAll)</span></a>
+				    <a class="list-group-item #((stuNumber_sumAll-reserveCourse_sumAll-reserveCourse_sum_edAll-reserveCourse_sum_confirmedAll)!=0?"active":"")">2B-3E-3F-3G (本周阶段约课数据是否异常)<span class="badge">#(stuNumber_sumAll-reserveCourse_sumAll-reserveCourse_sum_edAll-reserveCourse_sum_confirmedAll)</span></a>
+				    <a class="list-group-item">备注：上面全部为0则约课数据检查全部正确</a>
 				  </div>
 			  </div>
 			</div>
