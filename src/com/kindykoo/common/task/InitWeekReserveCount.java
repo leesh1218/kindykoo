@@ -37,9 +37,26 @@ public class InitWeekReserveCount implements Runnable {
 	@Override
 	public void run() {
 		String info = "";
-		int weekCount = ToolClass.getWeekCount(new Date());
+		int weekCount = ToolClass.getWeekCount(new Date());//该值不变
 		Paras paras = parasService.selectMember("maxReserveWeekCount");
-		int maxWeekCount = Integer.parseInt(paras.getValue());
+		int maxWeekCount = Integer.parseInt(paras.getValue());//该值不变
+		int tempMaxWeekCount = maxWeekCount;//该值可被修改
+		Paras parasMin = parasService.selectMember("minReserveWeekCount");
+		int minWeekCount = Integer.parseInt(parasMin.getValue());//该值不变
+		
+		Paras initparas = parasService.selectMember("initWeekFlag");
+		int initWeekFlag = Integer.parseInt(initparas.getValue());//每周末定时任务执行标志，1-已执行，0-未执行
+		
+		if(initWeekFlag == 1) {
+			info = "start and end run() weekCount="+weekCount+" initWeekFlag="+initWeekFlag+" minWeekCount="+minWeekCount+" maxWeekCount="+maxWeekCount;
+			System.out.println(info);
+			LogsService.insert(info);
+			return;
+		}else {
+			info = "start run() weekCount="+weekCount+" initWeekFlag="+initWeekFlag+" minWeekCount="+minWeekCount+" maxWeekCount="+maxWeekCount;
+			System.out.println(info);
+			LogsService.insert(info);
+		}
 		
 		//2019-07-01 修复查询出去年同样周数约课记录的问题
 		Paras paraDate = parasService.selectMember("currentDate");
@@ -50,7 +67,7 @@ public class InitWeekReserveCount implements Runnable {
 		String sql2 = "update student set enable=0 where mainUserFlag='子用户' and mainUserName in (select * from (select name from student where mainUserFlag='主用户' and counts >= 2) temp)";
 		String sql22 = "update student set enable=0 where mainUserFlag='主用户' and counts >= 2";
 		String sql3 = "update student set counts=0 where mainUserFlag='主用户' and counts > 0";
-		String sql33 = "update student set weekMaxCount=4 where weekMaxCount!=4 and vipType!='课时卡'";
+		String sql33 = "update student set weekMaxCount=4 where weekMaxCount>4 and vipType!='课时卡'";
 		String sql4 = "update student set enable=0 where mainUserFlag='子用户' and mainUserName in (select * from (select name from student where remainCourseCount<=disableCourseCount and mainUserFlag='主用户' and vipType='课时卡') temp)";
 		String sql44 = "update student set enable=0 where remainCourseCount<=disableCourseCount and mainUserFlag='主用户' and vipType='课时卡'";
 		String sql5 = "update student set enable=0 where mainUserFlag='子用户' and mainUserName in (select * from (select name from student where remainCourseCount<=0 and mainUserFlag='主用户' and vipType='课时卡') temp)";
@@ -100,22 +117,45 @@ public class InitWeekReserveCount implements Runnable {
 				LogsService.insert(info);
 			}
 			
-			//讲本阶段四周课程移至历史表
-			reserveCourseService.moveReserveCourseHistory(maxWeekCount,currentDateStr);
-			int count = parasService.updateWeekCount();
+			//将本阶段四周/一周课程移至历史表
+			reserveCourseService.moveReserveCourseHistory(maxWeekCount,currentDateStr,minWeekCount);
+			Paras parasType = parasService.selectMember("reserveCourseType");//单周放课参数
+			int reserveCourseTypePara = Integer.parseInt(parasType.getValue());
+			int count = parasService.updateWeekCount(reserveCourseTypePara,maxWeekCount,minWeekCount);
+			
 			if(count == 2){
-				info = "weekCount="+weekCount+" minReserveWeekCount and maxReserveWeekCount updated success";
-				maxWeekCount = maxWeekCount+4;
+				info = "weekCount="+weekCount+" reserveCourseTypePara="+reserveCourseTypePara+" minReserveWeekCount and maxReserveWeekCount updated success";
 				System.out.println(info);
 				LogsService.insert(info);
+				
+				if(reserveCourseTypePara == 1) {
+					tempMaxWeekCount = maxWeekCount+1;
+					//禁止固定课程
+					String tempsql = "update courseTable set allowFixed=0 where allowFixed=1 and weekCount > "+weekCount+" and weekCount <= "+tempMaxWeekCount;
+					info = courseTableService.initWeekReserveCount(weekCount,tempsql);
+					LogsService.insert("InitWeekReserveCount reserveCourseTypePara=1 "+info);
+				}else {
+					tempMaxWeekCount = maxWeekCount+4;
+				}
+				
 			}else{
-				info = "weekCount="+weekCount+" minReserveWeekCount and maxReserveWeekCount updated fail";
+				info = "weekCount="+weekCount+" reserveCourseTypePara="+reserveCourseTypePara+" minReserveWeekCount and maxReserveWeekCount updated fail";
 				System.out.println(info);
 				LogsService.insert(info);
 //				return;
 			}
+			
+			//禁止所有课程的预约
+			String sql = "update courseTable set enable=0 where enable=1 and weekCount > "+weekCount+" and weekCount <= "+tempMaxWeekCount;
+			info = courseTableService.initWeekReserveCount(weekCount,sql);
+			LogsService.insert("InitWeekReserveCount update courseTable set enable=0 "+info);
+			
 		}else{
-//			weekCount = 26;
+			//禁止所有课程的预约
+			String sql = "update courseTable set enable=0 where enable=1 and weekCount > "+weekCount+" and weekCount <= "+tempMaxWeekCount;
+			info = courseTableService.initWeekReserveCount(weekCount,sql);
+			LogsService.insert("InitWeekReserveCount update courseTable set enable=0 "+info);
+			
 			String status = "已预约";
 			List<ReserveCourse> reserveCourses = reserveCourseService.getStudentNameByWeekCount( status, weekCount+1);
 			List<Student> students = new ArrayList<>();
@@ -139,12 +179,21 @@ public class InitWeekReserveCount implements Runnable {
 			}
 		}
 		
-		//禁止所有课程的预约
-		String sql = "update courseTable set enable=0 where enable=1 and weekCount > "+weekCount+" and weekCount <= "+maxWeekCount;
-		info = courseTableService.initWeekReserveCount(weekCount,sql);
-		LogsService.insert("InitWeekReserveCount "+info);
-		
 		//更新会员和用户年龄
 		new StudentController().studentAgeUpdateCore();
+		
+		//更新initWeekFlag为1-已执行
+		int tmpInitWeekFlagCount = parasService.updateInitWeekFlag(1);
+		if(tmpInitWeekFlagCount == 1) {
+			info = "InitWeekReserveCount weekCount="+weekCount+" update initWeekFlag success and initWeekFlag=1";
+		}else {
+			info = "InitWeekReserveCount weekCount="+weekCount+" update initWeekFlag fail and initWeekFlag=0";
+		}
+		System.out.println(info);
+		LogsService.insert(info);
+		
+		info = "end run() weekCount="+weekCount+" initWeekFlag="+initWeekFlag+" minWeekCount="+(maxWeekCount+1)+" maxWeekCount="+tempMaxWeekCount;
+		System.out.println(info);
+		LogsService.insert(info);
 	}
 }

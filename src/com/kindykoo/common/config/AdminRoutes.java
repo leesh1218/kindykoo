@@ -6,6 +6,7 @@ import com.kindykoo.controller.classroom.ClassroomController;
 import com.kindykoo.controller.course.CourseController;
 import com.kindykoo.controller.courseTable.CourseTableController;
 import com.kindykoo.controller.courseTime.CourseTimeController;
+import com.kindykoo.controller.paras.ParasController;
 import com.kindykoo.controller.reserveCourse.ReserveCourseController;
 import com.kindykoo.controller.student.StudentController;
 import com.kindykoo.controller.teacher.TeacherController;
@@ -27,6 +28,7 @@ public class AdminRoutes extends Routes {
 		add("/admin/reserveCourse", ReserveCourseController.class); 
 		add("/admin/login", UserController.class); 
 		add("/admin/user", UserController.class); 
+		add("/admin/paras", ParasController.class); 
 	}
 
 }

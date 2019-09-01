@@ -1,0 +1,174 @@
+#@innerLayout()
+#define main()
+<div id="toolbar">
+	<div class="form-inline" role="form">
+           <div class="form-group">
+           		<input placeholder="关键词查询" style="width: 120px;" id="keywords" name="keywords" type="text" class="form-control" onchange="refreshThisTable()"/>
+           </div>
+           <div class="form-group">
+           		<select class="form-control" id="enable"  name="enable" onchange="refreshThisTable()">
+           			<option value="">是否启用该参数</option>
+           			<option value="true">启用</option>
+           			<option value="false">禁用</option>
+           		</select>
+           </div>
+           <button id="searchBtn" class="btn btn-primary btn-md">查询</button>
+          </div>
+      </div>
+<table id="table"
+	data-toolbar="#toolbar"
+           	data-show-refresh="true"
+            	data-show-toggle="false"
+           	data-show-columns="true"
+            	data-query-params="queryParams"></table>
+#end
+#define js()
+<script type="text/javascript">
+	var table = $('#table');
+	window.enableEvents = {
+			'click button ':function(e, value, row, index){
+				alert("该功能暂不可用！");
+				/* layer.confirm('确认'+(value?"禁用":"启用")+'该参数?', {icon: 3, title:'请确认'}, function(index){
+					var loadIndex = layer.load();
+					$.ajax({
+						type: "get",
+						dataType: "json",
+						url: "admin/paras/toggleEnable/"+row.id,
+						success: function(ret){
+							if(ret.isOk){
+								layer.close(loadIndex);
+								layer.msg('操作成功！', {icon: 1, time:1000});
+								row['enable'] = !row['enable'];
+								table.bootstrapTable('updateRow', {
+									index: index,
+									row: row
+								});
+							}
+						}
+					
+					})
+				}); */
+			}
+		};
+		window.operateEvents = {
+			'click .edit':function(e, value, row, index){
+				edit(row.id);
+			}
+		};
+	
+		function edit(id){
+			layer.open({
+				  type:2,
+				  title: (id==null || id<=0)?'新增':'修改',
+				  maxmin: true,
+				  area:['768px','620px'],
+				  btn:['确定','取消'],
+				  content: 'admin/paras/edit/'+id,
+				  yes: function(index, layero){
+					  var iframeName = layero.find("iframe")[0]['name'];
+					  var iframeWindow = window[iframeName];
+					  iframeWindow.submitThisForm();
+				  }
+				});
+		}
+		
+	function refreshThisTable(){
+		table.bootstrapTable('refresh');
+	}
+	
+	$("#searchBtn").on("click", function(){
+		refreshThisTable();
+	});
+	
+	function queryParams(params) {
+        $('#toolbar').find('input,select').each(function () {
+            params[$(this).attr('name')] = $(this).val();
+        });
+        return params;
+    }
+	
+	table.bootstrapTable({
+		pagination: true,
+		striped: true,
+		sidePagination: "server",
+		url: "admin/paras/list",
+		height:550,
+		pageNumber : 1,
+		pageSize: 10,
+		pageList:[5, 10, 15, 20, 30, 50],
+	    columns: [{
+	        field: 'index',
+	        title: '编号',
+               align: 'center'	,
+               formatter: indexFormatter
+	    }, {
+	        field: 'name',
+	        title: '参数名称',
+               align: 'center'
+	    },{
+	        field: 'value',
+	        title: '参数值',
+               align: 'center'
+	    },{
+	        field: 'desc',
+	        title: '参数描述',
+               align: 'center'
+	    },{
+	        field: 'enable',
+	        title: '是否启用该参数',
+            align: 'center',
+            events: enableEvents,
+            formatter: enableFormatter,
+            visible: false
+	    },{ 
+            field: 'operate',
+            title: '操作',
+            align: 'center',
+            events: operateEvents,
+            formatter: operateFormatter
+        }],
+           onResetView: function(){
+        	   $("[data-toggle='tooltip']").tooltip();
+           }
+	});
+	
+	function enableFormatter(value, row, index) {
+		var btn;
+		if(value){
+			btn = '<button data-toggle="tooltip" class="btn btn-success btn-xs" data-placement="left" title="点击禁用该参数"><span  class="glyphicon glyphicon-eye-close "></span></button>';
+		}else{
+			btn = '<button data-toggle="tooltip" class="btn btn-danger btn-xs" data-placement="left" title="点击启用该参数"><span  class="glyphicon glyphicon-eye-open "></span></button>';
+		}
+        return [btn].join('');
+    }
+	
+	function operateFormatter(value, row, index) {
+		if(row.name == 'reserveCourseType'){
+			return [
+	            '<button data-toggle="tooltip" class="btn btn-success btn-xs edit" title="编辑">',
+	            '<i class="glyphicon glyphicon-pencil"></i>',
+	            '</button>  '
+	        ].join('');
+		}
+    }
+	
+	function indexFormatter(value, row, index) {
+		var pageNumber = table.bootstrapTable('getOptions').pageNumber;  
+        var pageSize = table.bootstrapTable('getOptions').pageSize;  
+        return [(pageNumber-1) * pageSize+index+1].join('');
+    }
+	
+	setTimeout(function(){
+		table.bootstrapTable('resetView');
+	}, 100);
+	
+	$(".form-inline").append("<button data-toggle='tooltip' id='resetBtn' class='btn btn-info btn-md'>显示全部</button>");
+	
+	$("#resetBtn").on("click", function(){
+		$("#keywords").val("");
+		$("#enable").val("");
+		refreshThisTable();
+	});
+	
+</script>
+#end

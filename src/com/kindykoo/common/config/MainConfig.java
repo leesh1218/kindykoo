@@ -18,6 +18,7 @@ import com.jfinal.template.Engine;
 import com.kindykoo.common.model._MappingKit;
 import com.kindykoo.common.task.InitWeekReserveCount;
 import com.kindykoo.common.task.NotifyReserveCourseCondition;
+import com.kindykoo.common.task.StartReserveCourse;
 import com.kindykoo.common.task.UpdateAccessToken;
 
 public class MainConfig extends JFinalConfig {
@@ -119,6 +120,7 @@ public class MainConfig extends JFinalConfig {
 //		new UpdateCourseStatusBegin().run();
 //		new UpdateCourseStatusEnd().run();
 //		new InitWeekReserveCount().run();
+//		new StartReserveCourse().run();
 //		new Test().test();
 	}
 }

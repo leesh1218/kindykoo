@@ -731,10 +731,10 @@ public class ReserveCourseService {
 		return dao.findById(id);
 	}
 
-	public void moveReserveCourseHistory(int maxWeekCount, String currentDateStr) {
+	public void moveReserveCourseHistory(int maxWeekCount, String currentDateStr, int minWeekCount) {
 		
 		int i=0,j=0;
-		i = Db.update("insert into reserveCourseHistory (select * from reserveCourse where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and weekCount>="+(maxWeekCount-3)+" and weekCount<="+maxWeekCount+")");
+		i = Db.update("insert into reserveCourseHistory (select * from reserveCourse where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and weekCount>="+(minWeekCount)+" and weekCount<="+maxWeekCount+")");
 		if(i != 0) {
 			//j = Db.update("delete from reserveCourse where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and weekCount>="+(maxWeekCount-3)+" and weekCount<="+maxWeekCount);
 		}

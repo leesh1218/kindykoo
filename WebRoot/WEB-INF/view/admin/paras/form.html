@@ -1,0 +1,53 @@
+#@layerFormLayout()
+#define main()
+<form id="form" class="form-horizontal" role="form" action="admin/paras/submit" data-validator-option="{theme:'bootstrap', timely:2, stopOnError:true}">
+	<input type="hidden" value="#(paras.id??)" name="paras.id"/>
+	<div class="form-group">
+		<label class="control-label col-sm-2">参数名称</label>
+		<div class="col-sm-6">
+			<input type="text" id="name" data-rule="required;" onblur="checkName()" maxlength="20" #(paras!=null?"readonly='readonly'":"") placeholder="请输入参数名称（不允许重复）" class="form-control" value="#(paras.name??)" name="paras.name" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">参数值</label>
+		<div class="col-sm-6">
+			<input type="text" data-rule="required;" maxlength="20"  placeholder="请输入参数值" class="form-control" value="#(paras.value??)" name="paras.value" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2">参数描述</label>
+		<div class="col-sm-6">
+			<textarea rows="2" data-rule="required;" maxlength="50" placeholder="请输入描述信息" class="form-control" name="paras.desc">#(paras.desc??)</textarea>
+		</div>
+	</div>
+</form>
+#end
+#define js()
+<script type="text/javascript">
+
+	function checkName(){
+		var name = $("#name").val();
+		if(name != ''){
+			$.ajax({
+				type: "post",
+				dataType: "json",
+				url: "admin/paras/checkName",
+				data: {
+					name: name
+				},
+				success: function(ret){
+					if(!ret.isOk){
+						layer.msg(ret.infoMsg, {icon: 5, time:2000});
+						$("#name").val('');
+						$("#name").focus();
+					}
+				}
+			})
+		}
+	}
+
+	function submitThisForm(){
+		$("#form").submit();
+	}
+</script>
+#end

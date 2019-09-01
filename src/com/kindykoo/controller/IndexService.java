@@ -47,9 +47,15 @@ public class IndexService {
 		List<Object>  sql_2_str = Db.query(sql_2);
 		int disableCourseCount_sum = Integer.parseInt(sql_2_str.get(0).toString());
 		List<Object>  sql_3_str = Db.query(sql_3);
-		int stuNumber_sum = Integer.parseInt(sql_3_str.get(0).toString());
+		int stuNumber_sum = 0;
+		if(sql_3_str != null && !"".equals(String.valueOf(sql_3_str.get(0))) && !"null".equals(String.valueOf(sql_3_str.get(0)))) {
+			stuNumber_sum = Integer.parseInt(sql_3_str.get(0).toString());
+		}
 		List<Object>  sql_4_str = Db.query(sql_4);
-		int stuNumber_sumAll = Integer.parseInt(sql_4_str.get(0).toString());
+		int stuNumber_sumAll = 0;
+		if(sql_4_str != null && !"".equals(String.valueOf(sql_4_str.get(0))) && !"null".equals(String.valueOf(sql_4_str.get(0)))) {
+			stuNumber_sumAll = Integer.parseInt(sql_4_str.get(0).toString());
+		}
 		List<Object>  sql_5_str = Db.query(sql_5);
 		int reserveCourse_sum = Integer.parseInt(sql_5_str.get(0).toString());
 		List<Object>  sql_6_str = Db.query(sql_6);
