@@ -38,6 +38,9 @@ public class InitWeekReserveCount implements Runnable {
 	public void run() {
 		String info = "";
 		int weekCount = ToolClass.getWeekCount(new Date());//该值不变
+		if(weekCount == 1) {
+			weekCount = 53;//临时
+		}
 		Paras paras = parasService.selectMember("maxReserveWeekCount");
 		int maxWeekCount = Integer.parseInt(paras.getValue());//该值不变
 		int tempMaxWeekCount = maxWeekCount;//该值可被修改
