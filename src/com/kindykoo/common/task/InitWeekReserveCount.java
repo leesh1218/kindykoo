@@ -37,7 +37,7 @@ public class InitWeekReserveCount implements Runnable {
 	@Override
 	public void run() {
 		String info = "";
-		int weekCount = ToolClass.getWeekCount(new Date());//该值不变
+		int weekCount = ToolClass.getWeekCount(new Date());//该值不变 需要优化，参考StartReserveCourse，查参数currentWeekCount
 		if(weekCount == 1) {
 			weekCount = 53;//临时
 		}

@@ -69,8 +69,8 @@
 	window.operateEvents = {
 		'click .edit':function(e, value, row, index){
 			edit(row.id);
-		},
-		'click .remove':function(e, value, row, index){
+		}
+		/* ,'click .remove':function(e, value, row, index){
 			layer.confirm('确认删除?', {icon: 3, title:'请确认'}, function(index){
 				var loadIndex = layer.load();
 				$.ajax({
@@ -91,7 +91,7 @@
 				
 				})
 			});
-		}
+		} */
 	};
 	window.nameEvents = {
 			'click button ':function(e, value, row, index){
@@ -258,7 +258,15 @@
 	    },{
 	        field: 'remainCourseCount',
 	        title: '剩余课数',
-               align: 'center'
+               align: 'center',
+               editable: {
+            	   type: "text",
+            	   placeholder: "请输入剩余课数！",
+            	   validate:function(v){
+            		   if(!($.trim(v)) || isNaN(v) || v<0 || v>200) 
+            			   return "剩余课数不合法";
+            	   }
+               }
 	    },{
 	        field: 'courseCount',
 	        title: '总课时数',
@@ -393,10 +401,10 @@
         return [
             '<button data-toggle="tooltip" class="btn btn-success btn-xs edit" title="编辑">',
             '<i class="glyphicon glyphicon-pencil"></i>',
-            '</button>  ',
-            '<button data-toggle="tooltip" class="btn btn-danger btn-xs remove" title="删除">',
+            '</button>  '
+            /* ,'<button data-toggle="tooltip" class="btn btn-danger btn-xs remove" title="删除">',
             '<i class="glyphicon glyphicon-remove"></i>',
-            '</button>'
+            '</button>' */
         ].join('');
     }
 	

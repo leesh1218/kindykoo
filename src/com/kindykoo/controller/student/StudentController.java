@@ -216,6 +216,10 @@ public class StudentController extends Controller {
 	public void save(){
 		Student student = getModel(Student.class, "student");
 		Student students = Student.dao.findById(student.getId());
+		if(!"主用户".equals(students.getMainUserFlag()) || !"课时卡".equals(students.getVipType())) {
+			renderJson(Ret.fail());
+			return;
+		}
 		if(student.getWeekMaxCount() < students.getWeekReserveCount() ) {
 			renderJson(Ret.fail());
 			return;
@@ -226,7 +230,7 @@ public class StudentController extends Controller {
 		}
 		student.setUpdateTime(new Date());
 //		student.setCourseCount(students.getCourseCount());
-//		student.setUseCourseCount(student.getCourseCount()-student.getRemainCourseCount());
+		student.setUseCourseCount(students.getCourseCount()-student.getRemainCourseCount());
 		boolean success = service.update(student);
 		renderJson(success?Ret.ok():Ret.fail());
 	}
