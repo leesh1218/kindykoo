@@ -17,15 +17,19 @@ import com.jfinal.kit.Ret;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.kindykoo.common.model.CourseDetail;
+import com.kindykoo.common.model.Paras;
 import com.kindykoo.common.model.Student;
 import com.kindykoo.common.model.User;
 import com.kindykoo.common.tool.ToolClass;
 import com.kindykoo.controller.courseTable.CourseTableService;
+import com.kindykoo.controller.logs.LogsService;
+import com.kindykoo.controller.paras.ParasService;
 import com.kindykoo.controller.user.UserService;
 
 public class StudentController extends Controller {
 	private static StudentService service = StudentService.me;
 	private static UserService userService = UserService.me;
+	private static ParasService parasService = ParasService.me;
 
 	/**
 	 * 直接访问student进入list.jsp
@@ -216,6 +220,21 @@ public class StudentController extends Controller {
 	public void save(){
 		Student student = getModel(Student.class, "student");
 		Student students = Student.dao.findById(student.getId());
+		if(student.getRemainCourseCount() != students.getRemainCourseCount()) {
+			Paras paras = parasService.selectMember("remainCountFlag");
+			int remainCourseCountFlag = Integer.parseInt(paras.getValue());//该值不变
+			if(remainCourseCountFlag <= 0) {
+				renderJson(Ret.fail());
+				return;
+			}
+			if(student.getRemainCourseCount() > students.getRemainCourseCount() || (students.getRemainCourseCount()-student.getRemainCourseCount()>remainCourseCountFlag)) {
+				renderJson(Ret.fail());
+				return;
+			}
+			student.setUseCourseCount(students.getCourseCount()-student.getRemainCourseCount());
+			LogsService.insert("update remainCourseCount name="+ students.getName()+ " from " +students.getRemainCourseCount()+" to "+ student.getRemainCourseCount());
+		}
+		
 		if(!"主用户".equals(students.getMainUserFlag()) || !"课时卡".equals(students.getVipType())) {
 			renderJson(Ret.fail());
 			return;
@@ -229,8 +248,6 @@ public class StudentController extends Controller {
 			student.setEnable(true);
 		}
 		student.setUpdateTime(new Date());
-//		student.setCourseCount(students.getCourseCount());
-		student.setUseCourseCount(students.getCourseCount()-student.getRemainCourseCount());
 		boolean success = service.update(student);
 		renderJson(success?Ret.ok():Ret.fail());
 	}
