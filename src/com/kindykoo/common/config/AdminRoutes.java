@@ -1,6 +1,7 @@
 package com.kindykoo.common.config;
 
 import com.jfinal.config.Routes;
+import com.kindykoo.controller.Index2Controller;
 import com.kindykoo.controller.IndexController;
 import com.kindykoo.controller.classroom.ClassroomController;
 import com.kindykoo.controller.course.CourseController;
@@ -17,18 +18,18 @@ public class AdminRoutes extends Routes {
 	@Override
 	public void config() {
 		// TODO Auto-generated method stub
-		setBaseViewPath("WEB-INF/view");
-		add("/admin", IndexController.class);
-		add("/admin/student", StudentController.class); 
-		add("/admin/teacher", TeacherController.class); 
-		add("/admin/course", CourseController.class); 
-		add("/admin/courseTime", CourseTimeController.class); 
-		add("/admin/classroom", ClassroomController.class); 
-		add("/admin/courseTable", CourseTableController.class); 
-		add("/admin/reserveCourse", ReserveCourseController.class); 
-		add("/admin/login", UserController.class); 
-		add("/admin/user", UserController.class); 
-		add("/admin/paras", ParasController.class); 
+		setBaseViewPath("WEB-INF/view/admin");
+		add("/admin", IndexController.class,"/index");
+		add("/admin/student", StudentController.class,"/student"); 
+		add("/admin/teacher", TeacherController.class,"teacher"); 
+		add("/admin/course", CourseController.class,"/course"); 
+		add("/admin/courseTime", CourseTimeController.class,"/courseTime"); 
+		add("/admin/classroom", ClassroomController.class,"/classroom"); 
+		add("/admin/courseTable", CourseTableController.class,"/courseTable"); 
+		add("/admin/reserveCourse", ReserveCourseController.class,"/reserveCourse"); 
+		add("/admin/login", UserController.class,"/login"); 
+		add("/admin/user", UserController.class,"/user"); 
+		add("/admin/paras", ParasController.class,"/paras"); 
 	}
 
 }

@@ -50,6 +50,7 @@ public class MainConfig extends JFinalConfig {
 	@Override
 	public void configRoute(Routes me) {
 		me.add(new AdminRoutes());
+		me.add(new FrontRoutes());
 	}
 	/**
 	 * 配置JFinal插件
@@ -107,6 +108,7 @@ public class MainConfig extends JFinalConfig {
 		me.setDevMode(true);
 		me.addSharedFunction("/WEB-INF/view/admin/common/innerLayout.html");
 		me.addSharedFunction("/WEB-INF/view/admin/common/layerFormLayout.html");
+		me.addSharedFunction("/WEB-INF/view/admin/common/_layout.html");
 	}
 	
 	public static void main(String[] args) {

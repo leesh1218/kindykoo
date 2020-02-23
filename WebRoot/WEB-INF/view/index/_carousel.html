@@ -1,0 +1,68 @@
+### 控制轮播的样式细节
+#define css()
+<style type="text/css">
+	.carousel-item img {
+		width: 800px;
+		height: 480px;
+	}
+	.carousel-item{
+		text-align: center;
+	}
+</style>
+#end
+
+### 首页轮播广告
+<div class="jf-panel jf-article-list">
+
+<div id="demo" class="carousel slide" data-ride="carousel">
+	
+	<!-- 指示符 -->
+	<ul class="carousel-indicators">
+		<li data-target="#demo" data-slide-to="0" class="active"></li>
+		<li data-target="#demo" data-slide-to="1"></li>
+		<li data-target="#demo" data-slide-to="2"></li>
+		<li data-target="#demo" data-slide-to="3"></li>
+		<li data-target="#demo" data-slide-to="4"></li>
+		<li data-target="#demo" data-slide-to="5"></li>
+		<li data-target="#demo" data-slide-to="6"></li>
+	</ul>
+	
+	### 轮播图片，建议尺寸：300 x 880，建议比例：2.8 : 1
+	<div class="carousel-inner">
+		### class 属性添加了 active 值的将成轮播第一屏
+		<div class="carousel-item active">
+				<img src="assets/_carousel/image01.png">
+		</div>
+		<div class="carousel-item">
+				<img src="assets/_carousel/image02.png">
+		</div>
+		<div class="carousel-item">
+				<img src="assets/_carousel/image03.png">
+		</div>
+		<div class="carousel-item">
+				<img src="assets/_carousel/image04.png">
+		</div>
+		<div class="carousel-item">
+				<img src="assets/_carousel/image05.png">
+		</div>
+		<div class="carousel-item">
+				<img src="assets/_carousel/image06.png">
+		</div>
+		<div class="carousel-item">
+				<img src="assets/_carousel/image07.png">
+		</div>
+		
+	</div>
+	
+	### 左右切换按钮
+	<a class="carousel-control-prev" href="#demo" data-slide="prev">
+		<span class="carousel-control-prev-icon"></span>
+	</a>
+	
+	<a class="carousel-control-next" href="#demo" data-slide="next">
+		<span class="carousel-control-next-icon"></span>
+	</a>
+	
+</div> ### 轮播结束
+
+</div> ### jf-panel 结束
