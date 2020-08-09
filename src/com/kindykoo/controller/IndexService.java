@@ -31,8 +31,11 @@ public class IndexService {
 		
 		String sql_1 = "select sum(weekReserveCount) from student";
 		String sql_2 = "select sum(disableCourseCount) as id from student";
-		String sql_3 = "select sum(stuNumber) as id from courseTable where weekCount="+weekCount;
-		String sql_4 = "select sum(stuNumber) as id from courseTable where weekCount>="+minWeekCount+" and weekCount<="+maxWeekCount;
+		String sql_2_1 = "select sum(remainCourseCount) as id from student where remainCourseCount > 0 and vipType='课时卡' and endDate >= NOW();";
+		String sql_3 = "select sum(stuNumber) as id from courseTable where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and weekCount="+weekCount;
+		String sql_4 = "select sum(stuNumber) as id from courseTable where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and weekCount>="+minWeekCount+" and weekCount<="+maxWeekCount;
+		String sql_4_1 = "select count(*) as id from courseTable where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and stuNumber>0 and weekCount="+weekCount;
+		String sql_4_2 = "select count(*) as id from courseTable where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and weekCount="+weekCount;
 		String sql_5 = "select count(*) as id from reserveCourse where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and status='已预约' and weekCount="+weekCount;
 		String sql_6 = "select count(*) as id from reserveCourse where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and status='上课中' and weekCount="+weekCount;
 		String sql_7 = "select count(*) as id from reserveCourse where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and status='未确认' and weekCount="+weekCount;
@@ -46,6 +49,8 @@ public class IndexService {
 		int weekReserveCount_sum = Integer.parseInt(sql_1_str.get(0).toString());
 		List<Object>  sql_2_str = Db.query(sql_2);
 		int disableCourseCount_sum = Integer.parseInt(sql_2_str.get(0).toString());
+		List<Object>  sql_2_1_str = Db.query(sql_2_1);
+		int remainCourseCount_all = Integer.parseInt(sql_2_1_str.get(0).toString());
 		List<Object>  sql_3_str = Db.query(sql_3);
 		int stuNumber_sum = 0;
 		if(sql_3_str != null && !"".equals(String.valueOf(sql_3_str.get(0))) && !"null".equals(String.valueOf(sql_3_str.get(0)))) {
@@ -55,6 +60,16 @@ public class IndexService {
 		int stuNumber_sumAll = 0;
 		if(sql_4_str != null && !"".equals(String.valueOf(sql_4_str.get(0))) && !"null".equals(String.valueOf(sql_4_str.get(0)))) {
 			stuNumber_sumAll = Integer.parseInt(sql_4_str.get(0).toString());
+		}
+		List<Object>  sql_4_1_str = Db.query(sql_4_1);
+		int reserveCourseCount_week = 0;
+		if(sql_4_str != null && !"".equals(String.valueOf(sql_4_1_str.get(0))) && !"null".equals(String.valueOf(sql_4_1_str.get(0)))) {
+			reserveCourseCount_week = Integer.parseInt(sql_4_1_str.get(0).toString());
+		}
+		List<Object>  sql_4_2_str = Db.query(sql_4_2);
+		int courseCount_week = 0;
+		if(sql_4_str != null && !"".equals(String.valueOf(sql_4_2_str.get(0))) && !"null".equals(String.valueOf(sql_4_2_str.get(0)))) {
+			courseCount_week = Integer.parseInt(sql_4_2_str.get(0).toString());
 		}
 		List<Object>  sql_5_str = Db.query(sql_5);
 		int reserveCourse_sum = Integer.parseInt(sql_5_str.get(0).toString());
@@ -73,8 +88,11 @@ public class IndexService {
 		
 		maps.put("weekReserveCount_sum", weekReserveCount_sum);
 		maps.put("disableCourseCount_sum", disableCourseCount_sum);
+		maps.put("remainCourseCount_all", remainCourseCount_all);
 		maps.put("stuNumber_sum", stuNumber_sum);
 		maps.put("stuNumber_sumAll", stuNumber_sumAll);
+		maps.put("reserveCourseCount_week", reserveCourseCount_week);
+		maps.put("courseCount_week", courseCount_week);
 		maps.put("reserveCourse_sum", reserveCourse_sum);
 		maps.put("reserveCourse_sum_ing", reserveCourse_sum_ing);
 		maps.put("reserveCourse_sum_ed", reserveCourse_sum_ed);

@@ -16,8 +16,11 @@ public class IndexController extends Controller {
 		Map<String,Integer> maps = service.summaryQry();
 		setAttr("weekReserveCount_sum", maps.get("weekReserveCount_sum"));
 		setAttr("disableCourseCount_sum", maps.get("disableCourseCount_sum"));
+		setAttr("remainCourseCount_all", maps.get("remainCourseCount_all"));
 		setAttr("stuNumber_sum", maps.get("stuNumber_sum"));
 		setAttr("stuNumber_sumAll", maps.get("stuNumber_sumAll"));
+		setAttr("reserveCourseCount_week", maps.get("reserveCourseCount_week"));
+		setAttr("courseCount_week", maps.get("courseCount_week"));
 		setAttr("reserveCourse_sum", maps.get("reserveCourse_sum"));
 		setAttr("reserveCourse_sum_ing", maps.get("reserveCourse_sum_ing"));
 		setAttr("reserveCourse_sum_ed", maps.get("reserveCourse_sum_ed"));
