@@ -235,7 +235,7 @@ public class StudentController extends Controller {
 			LogsService.insert("update remainCourseCount name="+ students.getName()+ " from " +students.getRemainCourseCount()+" to "+ student.getRemainCourseCount());
 		}
 		
-		if(!"主用户".equals(students.getMainUserFlag()) || !"课时卡".equals(students.getVipType())) {
+		if(!"主用户".equals(students.getMainUserFlag()) || "课时卡".equals(students.getVipType())) {
 			renderJson(Ret.fail());
 			return;
 		}
