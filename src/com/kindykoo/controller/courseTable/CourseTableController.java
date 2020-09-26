@@ -194,6 +194,31 @@ public class CourseTableController extends Controller {
 		int inWeekCount = getParaToInt("inWeekCount");
 		//System.out.println(inWeekCount);
 		int outWeekCount = getParaToInt("outWeekCount");
+		
+		Paras paras1 = parasService.selectMember("currentWeekCount");
+		int currentWeekCount = Integer.parseInt(paras1.getValue());//该值不变
+		
+		Paras paras = parasService.selectMember("maxReserveWeekCount");
+		int maxWeekCount = Integer.parseInt(paras.getValue());//该值不变
+		
+		Paras paras2 = parasService.selectMember("minReserveWeekCount");
+		int minReserveWeekCount = Integer.parseInt(paras2.getValue());//该值不变
+		
+		if(currentWeekCount != maxWeekCount) {
+			renderJson(Ret.fail("error", "当前周数是："+currentWeekCount+"，本阶段最后一周（"+maxWeekCount+"）才允许复制课表"));
+			return;
+		}
+		
+		if(inWeekCount < minReserveWeekCount) {
+			renderJson(Ret.fail("error", "源周数必须大于等于本阶段第一周（"+minReserveWeekCount+"）"));
+			return;
+		}
+		
+		if(outWeekCount <= maxWeekCount) {
+			renderJson(Ret.fail("error", "复制目标周数必须大于本阶段最后一周（"+maxWeekCount+"）"));
+			return;
+		}
+		
 		CourseTable courseTable = new CourseTable();
 		courseTable.setWeekCount(inWeekCount);
 		List<CourseTable> courseTables = service.selectMember(courseTable,"copy");
@@ -454,33 +479,45 @@ public class CourseTableController extends Controller {
 	 */
 	public void submit(){
 		String teacherStatus = getPara("teacherStatus");
+		String tempweek = getPara("week");
+		String tempcourseTime = getPara("courseTime");
+		String tempcourse = getPara("course");
+		int stuNumber = Integer.parseInt(getPara("stuNumber"));
 		CourseTable courseTable = getModel(CourseTable.class, "courseTable");
-		//同步添加年龄限制字段
-		Course course = new Course();
-		course.setName(courseTable.getCourse());
-		Course courses = courseService.selectMember(course);
-		courseTable.setMinAge(courses.getMinAge());
-		courseTable.setMaxAge(courses.getMaxAge());
-		
-		CourseTime courseTime = new CourseTime();
-		courseTime.setTime(courseTable.getCourseTime());
-		CourseTime courseTimes = courseTimeService.selectMember(courseTime);
-		courseTable.setBeginTime(courseTimes.getBeginTime());
-		courseTable.setEndTime(courseTimes.getEndTime());
-		
-		Paras paras1 = parasService.selectMember("minReserveWeekCount");
-		courseTable.setWeekCount(Integer.parseInt(paras1.getValue())+courseTable.getWeekCount()-1);
-		
-		Date date = new Date();
-		SimpleDateFormat tmpsdf = new SimpleDateFormat("yyyy-MM-dd");
-		Paras tmpparasDate = parasService.selectMember("currentDate");
-		try {
-			date = tmpsdf.parse(tmpparasDate.getValue());
-		} catch (ParseException e) {
-			e.printStackTrace();
+		if(stuNumber > 0) {//week,courseTime,course三个字段未修改
+			Paras paras1 = parasService.selectMember("minReserveWeekCount");
+			courseTable.setWeekCount(Integer.parseInt(paras1.getValue())+courseTable.getWeekCount()-1);
+			courseTable.setWeek(tempweek);
+			courseTable.setCourseTime(tempcourseTime);
+			courseTable.setCourse(tempcourse);
+		}else {
+			//同步添加年龄限制字段
+			Course course = new Course();
+			course.setName(courseTable.getCourse());
+			Course courses = courseService.selectMember(course);
+			courseTable.setMinAge(courses.getMinAge());
+			courseTable.setMaxAge(courses.getMaxAge());
+			
+			CourseTime courseTime = new CourseTime();
+			courseTime.setTime(courseTable.getCourseTime());
+			CourseTime courseTimes = courseTimeService.selectMember(courseTime);
+			courseTable.setBeginTime(courseTimes.getBeginTime());
+			courseTable.setEndTime(courseTimes.getEndTime());
+			
+			Paras paras1 = parasService.selectMember("minReserveWeekCount");
+			courseTable.setWeekCount(Integer.parseInt(paras1.getValue())+courseTable.getWeekCount()-1);
+			
+			Date date = new Date();
+			SimpleDateFormat tmpsdf = new SimpleDateFormat("yyyy-MM-dd");
+			Paras tmpparasDate = parasService.selectMember("currentDate");
+			try {
+				date = tmpsdf.parse(tmpparasDate.getValue());
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+			int weekIndex = ToolClass.getIndex(weeks, courseTable.getWeek());
+			courseTable.setDate(ToolClass.getDateAndTime(ToolClass.getDate(date,courseTable.getWeekCount(),weekIndex), courseTable.getBeginTime()));
 		}
-		int weekIndex = ToolClass.getIndex(weeks, courseTable.getWeek());
-		courseTable.setDate(ToolClass.getDateAndTime(ToolClass.getDate(date,courseTable.getWeekCount(),weekIndex), courseTable.getBeginTime()));
 		
 		courseTable.setUpdateTime(new Date());
 		CourseTableService transService = enhance(CourseTableService.class);

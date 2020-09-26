@@ -3,6 +3,10 @@
 <form id="form" class="form-horizontal" role="form" action="admin/courseTable/submit" data-validator-option="{theme:'bootstrap', timely:2, stopOnError:true}">
 	<input type="hidden" value="#(courseTable.id??)" name="courseTable.id"/>
 	<input type="hidden" value="" id="teacherStatus" name="teacherStatus"/>
+	<input type="hidden" value="#(courseTable.stuNumber??)" id="stuNumber" name="stuNumber"/>
+	<input type="hidden" value="#(courseTable.week??)" id="week" name="week"/>
+	<input type="hidden" value="#(courseTable.courseTime??)" id="courseTime" name="courseTime"/>
+	<input type="hidden" value="#(courseTable.course??)" id="course" name="course"/>
 	<div class="form-group">
 		<label class="control-label col-sm-2">周数</label>
 		<div class="col-sm-6">
@@ -12,7 +16,7 @@
 	<div class="form-group">
 		<label class="control-label col-sm-2">星期</label>
 		<div class="col-sm-3">
-			<select name="courseTable.week"  class="form-control">
+			<select name="courseTable.week" #(courseTable!=null && courseTable.stuNumber > 0?"disabled='disabled'":"") class="form-control">
 				#for(week : weeks)
 				<option #((courseTable!=null && courseTable.week==(week))?"selected":"") value="#(week)">#(week)</option>
 				#end
@@ -22,7 +26,7 @@
 	<div class="form-group">
 		<label class="control-label col-sm-2">上课时间</label>
 		<div class="col-sm-3">
-			<select name="courseTable.courseTime"  class="form-control">
+			<select name="courseTable.courseTime" #(courseTable!=null && courseTable.stuNumber > 0?"disabled='disabled'":"") class="form-control">
 				#for(courseTime : courseTimes)
 				<option #((courseTable!=null && courseTable.courseTime==(courseTime.time))?"selected":"") value="#(courseTime.time)">#(courseTime.time)</option>
 				#end
@@ -32,7 +36,7 @@
 	<div class="form-group">
 		<label class="control-label col-sm-2">课程</label>
 		<div class="col-sm-3">
-			<select name="courseTable.course"  class="form-control">
+			<select name="courseTable.course" #(courseTable!=null && courseTable.stuNumber > 0?"disabled='disabled'":"") class="form-control">
 				#for(course : courses)
 				<option #((courseTable!=null && courseTable.course==(course.name))?"selected":"") value="#(course.name)">#(course.name)</option>
 				#end

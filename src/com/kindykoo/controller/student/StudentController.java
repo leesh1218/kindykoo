@@ -7,9 +7,11 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import com.jfinal.core.Controller;
@@ -220,33 +222,52 @@ public class StudentController extends Controller {
 	public void save(){
 		Student student = getModel(Student.class, "student");
 		Student students = Student.dao.findById(student.getId());
+		if(!checkCourseTime(students.getEndDate(),-(60*24))){
+			renderJson(Ret.fail("error", "会员卡已到期"));
+			return;
+		}
+		
 		if(student.getRemainCourseCount() != students.getRemainCourseCount()) {
+			if(!"主用户".equals(students.getMainUserFlag())) {
+				renderJson(Ret.fail("error", "非主用户不允许修改剩余课时"));
+				return;
+			}
+			if(!"课时卡".equals(students.getVipType())) {
+				renderJson(Ret.fail("error", "非课时卡不允许修改剩余课时"));
+				return;
+			}
+			
 			Paras paras = parasService.selectMember("remainCountFlag");
 			int remainCourseCountFlag = Integer.parseInt(paras.getValue());//该值不变
 			if(remainCourseCountFlag <= 0) {
-				renderJson(Ret.fail());
+				renderJson(Ret.fail("error", "不允许修改剩余课时"));
 				return;
 			}
-			if(student.getRemainCourseCount() > students.getRemainCourseCount() || (students.getRemainCourseCount()-student.getRemainCourseCount()>remainCourseCountFlag)) {
-				renderJson(Ret.fail());
+			if(student.getRemainCourseCount() > students.getRemainCourseCount()) {
+				renderJson(Ret.fail("error", "剩余课时只允许往小修改"));
+				return;
+			}
+			if((students.getRemainCourseCount()-student.getRemainCourseCount()>remainCourseCountFlag)) {
+				renderJson(Ret.fail("error", "剩余课时每次只能往小修改 "+remainCourseCountFlag+" 课时"));
 				return;
 			}
 			student.setUseCourseCount(students.getCourseCount()-student.getRemainCourseCount());
 			LogsService.insert("update remainCourseCount name="+ students.getName()+ " from " +students.getRemainCourseCount()+" to "+ student.getRemainCourseCount());
+		}else if(student.getWeekMaxCount() != students.getWeekMaxCount()) {
+			if("课时卡".equals(students.getVipType())) {
+				renderJson(Ret.fail("error", "课时卡不允许修改周最大约课数"));
+				return;
+			}
+			if(student.getWeekMaxCount() < students.getWeekReserveCount() ) {
+				renderJson(Ret.fail("error", "周最大约课数不允许小于本周约课数"));
+				return;
+			}else if(student.getWeekMaxCount() == students.getWeekReserveCount() ) {
+				student.setEnable(false);
+			}else {
+				student.setEnable(true);
+			}
 		}
 		
-		if(!"主用户".equals(students.getMainUserFlag()) || "课时卡".equals(students.getVipType())) {
-			renderJson(Ret.fail());
-			return;
-		}
-		if(student.getWeekMaxCount() < students.getWeekReserveCount() ) {
-			renderJson(Ret.fail());
-			return;
-		}else if(student.getWeekMaxCount() == students.getWeekReserveCount() ) {
-			student.setEnable(false);
-		}else {
-			student.setEnable(true);
-		}
 		student.setUpdateTime(new Date());
 		boolean success = service.update(student);
 		renderJson(success?Ret.ok():Ret.fail());
@@ -359,5 +380,20 @@ public class StudentController extends Controller {
 		}
 		System.out.println("总会员数："+list.size()+" 更新会员年龄  "+list2.size()+" 条记录");
 		System.out.println("更新用户年龄  "+list3.size()+" 条记录");
+	}
+	
+	/**
+	 * 
+	 * @param courseTable
+	 * @param minutes
+	 * @return
+	 */
+	public boolean checkCourseTime(Date date,int minutes){
+		Calendar calendar=Calendar.getInstance(Locale.CHINA);
+		calendar.add(Calendar.MINUTE, minutes);
+		if(!date.after(calendar.getTime())){
+			return false;
+		}
+		return true;
 	}
 }

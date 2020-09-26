@@ -347,7 +347,7 @@
         			   if(ret.isOk){
         				   layer.msg('更新成功！', {icon: 1, time: 2000});
         			   }else{
-        				   layer.msg('更新失败！', {icon: 5, time: 2000});
+        				   layer.msg('更新失败！('+ret.error+')', {icon: 5, time: 2000});
         			   }
         		   }
         	   })
