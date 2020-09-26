@@ -479,18 +479,8 @@ public class CourseTableController extends Controller {
 	 */
 	public void submit(){
 		String teacherStatus = getPara("teacherStatus");
-		String tempweek = getPara("week");
-		String tempcourseTime = getPara("courseTime");
-		String tempcourse = getPara("course");
-		int stuNumber = Integer.parseInt(getPara("stuNumber"));
 		CourseTable courseTable = getModel(CourseTable.class, "courseTable");
-		if(stuNumber > 0) {//week,courseTime,course三个字段未修改
-			Paras paras1 = parasService.selectMember("minReserveWeekCount");
-			courseTable.setWeekCount(Integer.parseInt(paras1.getValue())+courseTable.getWeekCount()-1);
-			courseTable.setWeek(tempweek);
-			courseTable.setCourseTime(tempcourseTime);
-			courseTable.setCourse(tempcourse);
-		}else {
+		if(courseTable.getId() == null || courseTable.getId() <= 0) {//新增
 			//同步添加年龄限制字段
 			Course course = new Course();
 			course.setName(courseTable.getCourse());
@@ -517,6 +507,47 @@ public class CourseTableController extends Controller {
 			}
 			int weekIndex = ToolClass.getIndex(weeks, courseTable.getWeek());
 			courseTable.setDate(ToolClass.getDateAndTime(ToolClass.getDate(date,courseTable.getWeekCount(),weekIndex), courseTable.getBeginTime()));
+		}else {
+			String tempweek = getPara("week");
+			String tempcourseTime = getPara("courseTime");
+			String tempcourse = getPara("course");
+			int tempweekCount = Integer.parseInt(getPara("weekCount"));
+			int stuNumber = Integer.parseInt(getPara("stuNumber"));
+			courseTable.setWeekCount(tempweekCount);
+			if(stuNumber > 0) {//week,courseTime,course三个字段未修改
+				Paras paras1 = parasService.selectMember("minReserveWeekCount");
+				courseTable.setWeekCount(Integer.parseInt(paras1.getValue())+courseTable.getWeekCount()-1);
+				courseTable.setWeek(tempweek);
+				courseTable.setCourseTime(tempcourseTime);
+				courseTable.setCourse(tempcourse);
+			}else {
+				//同步添加年龄限制字段
+				Course course = new Course();
+				course.setName(courseTable.getCourse());
+				Course courses = courseService.selectMember(course);
+				courseTable.setMinAge(courses.getMinAge());
+				courseTable.setMaxAge(courses.getMaxAge());
+				
+				CourseTime courseTime = new CourseTime();
+				courseTime.setTime(courseTable.getCourseTime());
+				CourseTime courseTimes = courseTimeService.selectMember(courseTime);
+				courseTable.setBeginTime(courseTimes.getBeginTime());
+				courseTable.setEndTime(courseTimes.getEndTime());
+				
+				Paras paras1 = parasService.selectMember("minReserveWeekCount");
+				courseTable.setWeekCount(Integer.parseInt(paras1.getValue())+courseTable.getWeekCount()-1);
+				
+				Date date = new Date();
+				SimpleDateFormat tmpsdf = new SimpleDateFormat("yyyy-MM-dd");
+				Paras tmpparasDate = parasService.selectMember("currentDate");
+				try {
+					date = tmpsdf.parse(tmpparasDate.getValue());
+				} catch (ParseException e) {
+					e.printStackTrace();
+				}
+				int weekIndex = ToolClass.getIndex(weeks, courseTable.getWeek());
+				courseTable.setDate(ToolClass.getDateAndTime(ToolClass.getDate(date,courseTable.getWeekCount(),weekIndex), courseTable.getBeginTime()));
+			}
 		}
 		
 		courseTable.setUpdateTime(new Date());
