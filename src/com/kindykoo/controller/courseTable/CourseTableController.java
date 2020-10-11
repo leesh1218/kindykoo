@@ -205,8 +205,8 @@ public class CourseTableController extends Controller {
 		int minReserveWeekCount = Integer.parseInt(paras2.getValue());//该值不变
 		
 		if(currentWeekCount != maxWeekCount) {
-			renderJson(Ret.fail("error", "当前周数是："+currentWeekCount+"，本阶段最后一周（"+maxWeekCount+"）才允许复制课表"));
-			return;
+			//renderJson(Ret.fail("error", "当前周数是："+currentWeekCount+"，本阶段最后一周（"+maxWeekCount+"）才允许复制课表"));
+			//return;
 		}
 		
 		if(inWeekCount < minReserveWeekCount) {
@@ -215,8 +215,8 @@ public class CourseTableController extends Controller {
 		}
 		
 		if(outWeekCount <= maxWeekCount) {
-			renderJson(Ret.fail("error", "复制目标周数必须大于本阶段最后一周（"+maxWeekCount+"）"));
-			return;
+			//renderJson(Ret.fail("error", "复制目标周数必须大于本阶段最后一周（"+maxWeekCount+"）"));
+			//return;
 		}
 		
 		CourseTable courseTable = new CourseTable();
