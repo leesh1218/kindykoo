@@ -1,12 +1,15 @@
 package com.kindykoo.controller.paras;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import com.jfinal.kit.Ret;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.kindykoo.common.model.Paras;
+import com.kindykoo.common.tool.ToolClass;
 
 public class ParasService {
 	public static final ParasService me = new ParasService();
@@ -58,33 +61,75 @@ public class ParasService {
 	}
 
 	/**
-	 * 每四周更新参数
-	 * @param reserveCourseTypePara 
-	 * @param minWeekCount 
-	 * @param maxWeekCount 
-	 * @param minWeekCount 
-	 * @param maxWeekCount 
-	 * @param string
-	 * @param string2
+	 * 每四周更新参数(minReserveWeekCount,maxReserveWeekCount)
+	 * @param yearEndFlag
+	 * @param reserveCourseTypePara
+	 * @param maxWeekCount
+	 * @param minWeekCount
+	 * @param parasWeekCount 
 	 * @return
 	 */
-	public int updateWeekCount(int reserveCourseTypePara, int maxWeekCount, int minWeekCount) {
+	public int updateWeekCount(int yearEndFlag, int reserveCourseTypePara, int maxWeekCount, int minWeekCount, Map<String, String> parasWeekCount) {
 		int count2 = 0;
-		String sql = "update paras set value=value+4 where name='minReserveWeekCount' or name='maxReserveWeekCount'";
-		if(reserveCourseTypePara == 1) {//1-单周放课
-			sql = "update paras set value='"+(maxWeekCount+1)+"' where name='minReserveWeekCount' or name='maxReserveWeekCount'";
-		}else if(maxWeekCount - minWeekCount ==0) {//上一阶段是单周约课
-			sql = "update paras set value='"+(maxWeekCount+1)+"' where name='minReserveWeekCount'";
-			String sql2 = "update paras set value=value+4 where name='maxReserveWeekCount'";
-			count2 = Db.update(sql2);
+		String sql = "";
+		if(yearEndFlag == 1) {
+			int tmpWeekCount = ToolClass.getWeekCount(new Date());
+			if(reserveCourseTypePara == 1) {//1-单周放课
+				sql = "update paras set value='"+(tmpWeekCount+1)+"' where name='minReserveWeekCount' or name='maxReserveWeekCount'";
+				parasWeekCount.put("minReserveWeekCount",String.valueOf(tmpWeekCount+1));
+				parasWeekCount.put("maxReserveWeekCount",String.valueOf(tmpWeekCount+1));
+			}else {
+				sql = "update paras set value='"+(tmpWeekCount+1)+"' where name='minReserveWeekCount'";
+				String sql2 = "update paras set value='"+(tmpWeekCount+4)+"' where name='maxReserveWeekCount'";
+				count2 = Db.update(sql2);
+				parasWeekCount.put("minReserveWeekCount",String.valueOf(tmpWeekCount+1));
+				parasWeekCount.put("maxReserveWeekCount",String.valueOf(tmpWeekCount+4));
+			}
+		}else {
+			sql = "update paras set value=value+4 where name='minReserveWeekCount' or name='maxReserveWeekCount'";
+			parasWeekCount.put("minReserveWeekCount",String.valueOf(maxWeekCount+1));
+			parasWeekCount.put("maxReserveWeekCount",String.valueOf(maxWeekCount+4));
+			if(reserveCourseTypePara == 1) {//1-单周放课
+				sql = "update paras set value='"+(maxWeekCount+1)+"' where name='minReserveWeekCount' or name='maxReserveWeekCount'";
+				parasWeekCount.put("minReserveWeekCount",String.valueOf(maxWeekCount+1));
+				parasWeekCount.put("maxReserveWeekCount",String.valueOf(maxWeekCount+1));
+			}else if(maxWeekCount - minWeekCount ==0) {//上一阶段是单周约课
+				sql = "update paras set value='"+(maxWeekCount+1)+"' where name='minReserveWeekCount'";
+				String sql2 = "update paras set value=value+4 where name='maxReserveWeekCount'";
+				count2 = Db.update(sql2);
+				parasWeekCount.put("minReserveWeekCount",String.valueOf(maxWeekCount+1));
+				parasWeekCount.put("maxReserveWeekCount",String.valueOf(maxWeekCount+4));
+			}
 		}
 		
 		int count = Db.update(sql);
 		return count2+count;
 	}
 
+	/**
+	 * 阶段内部更新当前周数的方法
+	 * @param weekCount
+	 * @return
+	 */
 	public int updateCurrentWeekCount(int weekCount) {
 		String sql = "update paras set value="+(weekCount+1)+" where name='currentWeekCount'";
+		int count = Db.update(sql);
+		return count;
+	}
+	
+	/**
+	 * 每个阶段最后一周更新当前周数的方法
+	 * @param weekCount
+	 * @param yearEndFlag 年终标志
+	 * @return
+	 */
+	public int updateCurrentWeekCount2(int weekCount,int yearEndFlag) {
+		String sql = "";
+		if(yearEndFlag == 1) {
+			sql = "update paras set value="+(ToolClass.getWeekCount(new Date())+1)+" where name='currentWeekCount'";
+		}else {
+			sql = "update paras set value="+(weekCount+1)+" where name='currentWeekCount'";
+		}
 		int count = Db.update(sql);
 		return count;
 	}
