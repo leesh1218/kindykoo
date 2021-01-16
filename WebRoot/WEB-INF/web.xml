@@ -20,18 +20,33 @@
                 protected Resource
                </web-resource-name>
                <url-pattern>/admin</url-pattern>
-               <url-pattern>/admin/</url-pattern>
 	    </web-resource-collection>
 	   <auth-constraint>
 	        <role-name>admin</role-name>
+	   </auth-constraint>
+  </security-constraint>
+  <security-constraint>
+	     <web-resource-collection>
+               <web-resource-name>
+                protected Resource
+               </web-resource-name>
+               <url-pattern>/admin/student/edit/*</url-pattern>
+               <url-pattern>/admin/student/save/*</url-pattern>
+	    </web-resource-collection>
+	   <auth-constraint>
+	        <role-name>root</role-name>
 	   </auth-constraint>
   </security-constraint>
    <login-config>
 	    <auth-method>DIGEST</auth-method>
 	    <realm-name>Default</realm-name>
    </login-config>
-	<security-role>
-       <description>this is a admin</description>
-       <role-name>admin</role-name>
-   </security-role>
+   <security-role>
+     <description>Baron's role to log in administration application</description>
+     <role-name>admin</role-name>
+  </security-role>
+   <security-role>
+     <description>Baron's role to log in administration application</description>
+     <role-name>root</role-name>
+  </security-role>
 </web-app>
