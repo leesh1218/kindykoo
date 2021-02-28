@@ -523,8 +523,7 @@ public class CourseTableController extends Controller {
 		Paras parasCur = parasService.selectMember("currentWeekCount");
 		int curWeekCount = Integer.parseInt(parasCur.getValue());//该值不变
 		//reserveCourseType
-		//当前周数
-		Paras parasTyp = parasService.selectMember("currentWeekCount");
+		Paras parasTyp = parasService.selectMember("reserveCourseType");
 		int courseType = Integer.parseInt(parasTyp.getValue());//该值不变
 		if(maxWeekCount == minWeekCount && minWeekCount == curWeekCount ) {//本阶段为单周
 			if(courseType == 1) {//下阶段为单周放课
