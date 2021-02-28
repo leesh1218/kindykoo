@@ -10,12 +10,11 @@
 	<input type="hidden" value="#(courseTable.course??)" id="course" name="course"/>
 	<div class="form-group">
 		<label class="control-label col-sm-2">周数</label>
-		<div class="col-sm-3">
+		<div class="col-sm-6">
 			<select name="courseTable.weekCount" #(courseTable!=null?"disabled='disabled'":"") class="form-control">
-				<option #((courseTable!=null && courseTable.weekCount==1)?"selected":"") value="1">第一周</option>
-				<option #((courseTable!=null && courseTable.weekCount==2)?"selected":"") value="2">第二周</option>
-				<option #((courseTable!=null && courseTable.weekCount==3)?"selected":"") value="3">第三周</option>
-				<option #((courseTable!=null && courseTable.weekCount==4)?"selected":"") value="4">第四周</option>
+				#for(weekCount : weekCounts)
+				<option #((courseTable!=null && courseTable.weekCount==(for.index+1))?"selected":"") value="#(for.index+1)">#(weekCount)</option>
+				#end
 			</select>
 		</div>
 	</div>
@@ -41,7 +40,7 @@
 	</div>
 	<div class="form-group">
 		<label class="control-label col-sm-2">课程</label>
-		<div class="col-sm-3">
+		<div class="col-sm-6">
 			<select name="courseTable.course" #(courseTable!=null && courseTable.stuNumber > 0?"disabled='disabled'":"") class="form-control">
 				#for(course : courses)
 				<option #((courseTable!=null && courseTable.course==(course.name))?"selected":"") value="#(course.name)">#(course.name)</option>

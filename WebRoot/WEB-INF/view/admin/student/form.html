@@ -91,7 +91,9 @@
 		<div class="col-sm-3">
 			<select name="student.vipType" id="vipType"  class="form-control">
 				<option value="">--请选择--</option>
+				<option #((student!=null && student.vipType=="一季度卡")?"selected":"") value="一季度卡">一季度卡</option>
 				<option #((student!=null && student.vipType=="半年卡")?"selected":"") value="半年卡">半年卡</option>
+				<option #((student!=null && student.vipType=="三季度卡")?"selected":"") value="三季度卡">三季度卡</option>
 				<option #((student!=null && student.vipType=="年卡")?"selected":"") value="年卡">年卡</option>
 				<option #((student!=null && student.vipType=="一年半卡")?"selected":"") value="一年半卡">一年半卡</option>
 				<option #((student!=null && student.vipType=="两年卡")?"selected":"") value="两年卡">两年卡</option>
@@ -254,12 +256,24 @@
 		var date = StringToDate(beginDate);
 		var vipType = $("#vipType").val();
 		var endDate;
+		if(vipType== "一季度卡"){
+			endDate = date.DateAdd('m',3);
+			$("#endDate").val(endDate.format("yyyy-MM-dd"));
+		}
 		if(vipType== "半年卡"){
 			endDate = date.DateAdd('m',6);
 			$("#endDate").val(endDate.format("yyyy-MM-dd"));
 		}
+		if(vipType== "三季度卡"){
+			endDate = date.DateAdd('m',9);
+			$("#endDate").val(endDate.format("yyyy-MM-dd"));
+		}
 		if(vipType== "年卡"){
 			endDate = date.DateAdd('y',1);
+			$("#endDate").val(endDate.format("yyyy-MM-dd"));
+		}
+		if(vipType== "一年半卡"){
+			endDate = date.DateAdd('m',18);
 			$("#endDate").val(endDate.format("yyyy-MM-dd"));
 		}
 		if(vipType== "两年卡"){
@@ -304,12 +318,24 @@
 			$("#presentCourseCount").hide();
 			$("#vipCourseCount").val('');
 			$("#presentCourseCount").val('');
+			if(this.value== "一季度卡"){
+				endDate = date.DateAdd('m',3);
+				$("#endDate").val(endDate.format("yyyy-MM-dd"));
+			}
 			if(this.value== "半年卡"){
 				endDate = date.DateAdd('m',6);
 				$("#endDate").val(endDate.format("yyyy-MM-dd"));
 			}
+			if(this.value== "三季度卡"){
+				endDate = date.DateAdd('m',9);
+				$("#endDate").val(endDate.format("yyyy-MM-dd"));
+			}
 			if(this.value== "年卡"){
 				endDate = date.DateAdd('y',1);
+				$("#endDate").val(endDate.format("yyyy-MM-dd"));
+			}
+			if(this.value== "一年半卡"){
+				endDate = date.DateAdd('m',18);
 				$("#endDate").val(endDate.format("yyyy-MM-dd"));
 			}
 			if(this.value== "两年卡"){

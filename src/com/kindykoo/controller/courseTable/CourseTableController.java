@@ -60,6 +60,49 @@ public class CourseTableController extends Controller {
 	 * 直接访问course进入list.jsp
 	 */
 	public void index() {
+		//本阶段最大周数
+		Paras parasMax = parasService.selectMember("maxReserveWeekCount");
+		int maxWeekCount = Integer.parseInt(parasMax.getValue());//该值不变
+		//本阶段最小周数
+		Paras parasMin = parasService.selectMember("minReserveWeekCount");
+		int minWeekCount = Integer.parseInt(parasMin.getValue());//该值不变
+		//当前周数
+		Paras parasCur = parasService.selectMember("currentWeekCount");
+		int curWeekCount = Integer.parseInt(parasCur.getValue());//该值不变
+		//reserveCourseType
+		//当前周数
+		Paras parasTyp = parasService.selectMember("currentWeekCount");
+		int courseType = Integer.parseInt(parasTyp.getValue());//该值不变
+		if(maxWeekCount == minWeekCount && minWeekCount == curWeekCount ) {//本阶段为单周
+			if(courseType == 1) {//下阶段为单周放课
+				weekCounts = new String[] {"第一周（当前周）", "第二周（下阶段第一周）"};
+			}else {//下阶段为四周放课
+				weekCounts = new String[] {"第一周（当前周）", "第二周（下阶段第一周）", "第三周（下阶段第二周）", "第四周（下阶段第三周）", "第五周（下阶段第四周）"};
+			}
+		}else if(maxWeekCount - minWeekCount == 3) {//本阶段为四周放课
+			if(courseType == 1) {//下阶段为单周放课
+				if(curWeekCount == minWeekCount) {
+					weekCounts = new String[] {"第一周（当前周）", "第二周（本阶段第二周）", "第三周（本阶段第三周）", "第四周（本阶段第四周）", "第五周（下阶段第一周）"};
+				}else if(curWeekCount == (minWeekCount + 1)) {
+					weekCounts = new String[] {"第一周（本阶段第一周）", "第二周（当前周）", "第三周（本阶段第三周）", "第四周（本阶段第四周）", "第五周（下阶段第一周）"};
+				}else if(curWeekCount == (minWeekCount + 2)) {
+					weekCounts = new String[] {"第一周（本阶段第一周）", "第二周（本阶段第二周）", "第三周（当前周）", "第四周（本阶段第四周）", "第五周（下阶段第一周）"};
+				}else {
+					weekCounts = new String[] {"第一周（本阶段第一周）", "第二周（本阶段第二周）", "第三周（本阶段第三周）", "第四周（当前周）", "第五周（下阶段第一周）"};
+				}
+			}else {//下阶段为四周放课
+				if(curWeekCount == minWeekCount) {
+					weekCounts = new String[] {"第一周（当前周）", "第二周（本阶段第二周）", "第三周（本阶段第三周）", "第四周（本阶段第四周）", "第五周（下阶段第一周）", "第六周（下阶段第二周）", "第七周（下阶段第三周）", "第八周（下阶段第四周）"};
+				}else if(curWeekCount == (minWeekCount + 1)) {
+					weekCounts = new String[] {"第一周（本阶段第一周）", "第二周（当前周）", "第三周（本阶段第三周）", "第四周（本阶段第四周）", "第五周（下阶段第一周）", "第六周（下阶段第二周）", "第七周（下阶段第三周）", "第八周（下阶段第四周）"};
+				}else if(curWeekCount == (minWeekCount + 2)) {
+					weekCounts = new String[] {"第一周（本阶段第一周）", "第二周（本阶段第二周）", "第三周（当前周）", "第四周（本阶段第四周）", "第五周（下阶段第一周）", "第六周（下阶段第二周）", "第七周（下阶段第三周）", "第八周（下阶段第四周）"};
+				}else {
+					weekCounts = new String[] {"第一周（本阶段第一周）", "第二周（本阶段第二周）", "第三周（本阶段第三周）", "第四周（当前周）", "第五周（下阶段第一周）", "第六周（下阶段第二周）", "第七周（下阶段第三周）", "第八周（下阶段第四周）"};
+				}
+			}
+		}
+		
 		setAttr("weekCounts", weekCounts);
 		setAttr("weeks", weeks);
 		List<CourseTime> courseTimes = courseTimeService.getAllCourseTime();
@@ -210,13 +253,22 @@ public class CourseTableController extends Controller {
 		}
 		
 		if(inWeekCount < minReserveWeekCount) {
-			renderJson(Ret.fail("error", "源周数必须大于等于本阶段第一周（"+minReserveWeekCount+"）"));
-			return;
+			//renderJson(Ret.fail("error", "源周数必须大于等于本阶段第一周（"+minReserveWeekCount+"）"));
+			//return;
 		}
 		
 		if(outWeekCount <= maxWeekCount) {
 			//renderJson(Ret.fail("error", "复制目标周数必须大于本阶段最后一周（"+maxWeekCount+"）"));
 			//return;
+		}
+		
+		//校验目标周数课表是否为空
+		CourseTable temp = new CourseTable();
+		temp.setWeekCount(outWeekCount);
+		List<CourseTable> tempCourseTables = service.selectMember(temp,"copy");
+		if(tempCourseTables != null && tempCourseTables.size() > 0) {
+			renderJson(Ret.fail("error", "第"+outWeekCount+"周课表不为空，有"+ tempCourseTables.size() + "条记录"));
+			return;
 		}
 		
 		CourseTable courseTable = new CourseTable();
@@ -461,6 +513,50 @@ public class CourseTableController extends Controller {
 			courseTable.setWeekCount(courseTable.getWeekCount()-Integer.parseInt(paras1.getValue())+1);
 			setAttr("courseTable", courseTable);
 		}
+		//获取周数字典
+		//本阶段最大周数
+		Paras parasMax = parasService.selectMember("maxReserveWeekCount");
+		int maxWeekCount = Integer.parseInt(parasMax.getValue());//该值不变
+		//本阶段最小周数
+		Paras parasMin = parasService.selectMember("minReserveWeekCount");
+		int minWeekCount = Integer.parseInt(parasMin.getValue());//该值不变
+		//当前周数
+		Paras parasCur = parasService.selectMember("currentWeekCount");
+		int curWeekCount = Integer.parseInt(parasCur.getValue());//该值不变
+		//reserveCourseType
+		//当前周数
+		Paras parasTyp = parasService.selectMember("currentWeekCount");
+		int courseType = Integer.parseInt(parasTyp.getValue());//该值不变
+		if(maxWeekCount == minWeekCount && minWeekCount == curWeekCount ) {//本阶段为单周
+			if(courseType == 1) {//下阶段为单周放课
+				weekCounts = new String[] {"第一周（当前周）", "第二周（下阶段第一周）"};
+			}else {//下阶段为四周放课
+				weekCounts = new String[] {"第一周（当前周）", "第二周（下阶段第一周）", "第三周（下阶段第二周）", "第四周（下阶段第三周）", "第五周（下阶段第四周）"};
+			}
+		}else if(maxWeekCount - minWeekCount == 3) {//本阶段为四周放课
+			if(courseType == 1) {//下阶段为单周放课
+				if(curWeekCount == minWeekCount) {
+					weekCounts = new String[] {"第一周（当前周）", "第二周（本阶段第二周）", "第三周（本阶段第三周）", "第四周（本阶段第四周）", "第五周（下阶段第一周）"};
+				}else if(curWeekCount == (minWeekCount + 1)) {
+					weekCounts = new String[] {"第一周（本阶段第一周）", "第二周（当前周）", "第三周（本阶段第三周）", "第四周（本阶段第四周）", "第五周（下阶段第一周）"};
+				}else if(curWeekCount == (minWeekCount + 2)) {
+					weekCounts = new String[] {"第一周（本阶段第一周）", "第二周（本阶段第二周）", "第三周（当前周）", "第四周（本阶段第四周）", "第五周（下阶段第一周）"};
+				}else {
+					weekCounts = new String[] {"第一周（本阶段第一周）", "第二周（本阶段第二周）", "第三周（本阶段第三周）", "第四周（当前周）", "第五周（下阶段第一周）"};
+				}
+			}else {//下阶段为四周放课
+				if(curWeekCount == minWeekCount) {
+					weekCounts = new String[] {"第一周（当前周）", "第二周（本阶段第二周）", "第三周（本阶段第三周）", "第四周（本阶段第四周）", "第五周（下阶段第一周）", "第六周（下阶段第二周）", "第七周（下阶段第三周）", "第八周（下阶段第四周）"};
+				}else if(curWeekCount == (minWeekCount + 1)) {
+					weekCounts = new String[] {"第一周（本阶段第一周）", "第二周（当前周）", "第三周（本阶段第三周）", "第四周（本阶段第四周）", "第五周（下阶段第一周）", "第六周（下阶段第二周）", "第七周（下阶段第三周）", "第八周（下阶段第四周）"};
+				}else if(curWeekCount == (minWeekCount + 2)) {
+					weekCounts = new String[] {"第一周（本阶段第一周）", "第二周（本阶段第二周）", "第三周（当前周）", "第四周（本阶段第四周）", "第五周（下阶段第一周）", "第六周（下阶段第二周）", "第七周（下阶段第三周）", "第八周（下阶段第四周）"};
+				}else {
+					weekCounts = new String[] {"第一周（本阶段第一周）", "第二周（本阶段第二周）", "第三周（本阶段第三周）", "第四周（当前周）", "第五周（下阶段第一周）", "第六周（下阶段第二周）", "第七周（下阶段第三周）", "第八周（下阶段第四周）"};
+				}
+			}
+		}
+		
 		setAttr("weekCounts", weekCounts);
 		setAttr("weeks", weeks);
 		List<Course> courses = courseService.getAllCourse();
