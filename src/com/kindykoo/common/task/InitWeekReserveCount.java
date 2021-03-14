@@ -173,6 +173,28 @@ public class InitWeekReserveCount implements Runnable {
 			info = courseTableService.initWeekReserveCount(weekCount,sql);
 			LogsService.insert("InitWeekReserveCount update courseTable set enable=0 "+info);
 			
+			String status = "已预约";
+			List<ReserveCourse> reserveCourses = reserveCourseService.getStudentNameByWeekCount( status, weekCount+1);
+			List<Student> students = new ArrayList<>();
+			if(reserveCourses != null && reserveCourses.size() > 0){
+				for (ReserveCourse reserveCourse : reserveCourses) {
+					int weekReserveCount = reserveCourseService.getWeekReserveCount(weekCount+1,reserveCourse);
+					Student student = new Student();
+					student.setName(reserveCourse.getStudentName());
+					student.setPhone(reserveCourse.getPhone());
+					List<Student> studentList = service.selectMember(student);
+					student = studentList.get(0);
+					student.setWeekReserveCount(weekReserveCount);
+					if(!"课时卡".equals(student.getVipType()) && student.getWeekReserveCount() >= student.getWeekMaxCount()){
+						student.setEnable(false);
+					}
+					students.add(student);
+				}
+				Db.batchUpdate(students, students.size());
+				info = "weekCount="+weekCount+" batch update "+students.size();
+				LogsService.insert(info);
+			}
+			
 		}else{
 			
 			//更新当前周数
