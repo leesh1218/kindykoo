@@ -118,7 +118,7 @@ public class MainConfig extends JFinalConfig {
 	@Override
 	public void afterJFinalStart() {
 		new UpdateAccessToken().run();
-		new NotifyReserveCourseCondition().run();
+//		new NotifyReserveCourseCondition().run();
 //		new UpdateCourseStatusBegin().run();
 //		new UpdateCourseStatusEnd().run();
 //		new InitWeekReserveCount().run();

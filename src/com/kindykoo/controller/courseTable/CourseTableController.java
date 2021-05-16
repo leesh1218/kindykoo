@@ -259,6 +259,11 @@ public class CourseTableController extends Controller {
 		if(outWeekCount <= maxWeekCount) {
 			//renderJson(Ret.fail("error", "复制目标周数必须大于本阶段最后一周（"+maxWeekCount+"）"));
 			//return;
+		}else {// 复制下一阶段课程时候，本阶段所有课程必须全部确认完
+			if(!reserveCourseService.checkReserveCourseStatus(minReserveWeekCount,maxWeekCount)) {
+				renderJson(Ret.fail("error", "复制下一阶段课程之前，本阶段所有课程必须全部上完，并且确认完成"));
+				return;
+			}
 		}
 		
 		//校验目标周数课表是否为空

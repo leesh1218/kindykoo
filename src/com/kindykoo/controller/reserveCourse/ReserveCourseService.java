@@ -781,4 +781,24 @@ public class ReserveCourseService {
 			return list;
 		}
 	}
+
+	/**
+	 * 检查本阶段所有课程是否全部确认完，且所有课程已经上完，满足条件，返回 true,否则，返回false
+	 * @param maxWeekCount 
+	 * @param minReserveWeekCount 
+	 * @return
+	 */
+	public boolean checkReserveCourseStatus(int minWeekCount, int maxWeekCount) {
+		//2019-07-01 修复查询出去年同样周数约课记录的问题
+		Paras paraDate = parasService.selectMember("currentDate");
+		String currentDateStr = paraDate.getValue();
+		String sql = "select count(*) as id from reserveCourse where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and status in ('已预约','上课中','未确认') and weekCount>="+minWeekCount+" and weekCount<="+maxWeekCount;
+		List<Object>  sql_str = Db.query(sql);
+		int result = Integer.parseInt(sql_str.get(0).toString());
+		if(result == 0) {
+			return true;
+		}else {
+			return false;
+		}
+	}
 }
