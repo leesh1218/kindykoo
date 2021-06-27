@@ -215,9 +215,9 @@ public class ReserveCourseService {
 				sql = "select * from reserveCourse where date > STR_TO_DATE('"+currentDateStr+"','%Y-%m-%d') and phone='"+reserveCourse.getPhone()+"' and studentName='"+reserveCourse.getStudentName()+"' and weekCount="+reserveCourse.getWeekCount()+" and status != '已请假'"+" order by date asc";
 			}
 		}else if("reserveOrFixedCourse".equals(flag)){
-			sql = "select * from reserveCourse where phone='"+reserveCourse.getPhone()+"' and status = '已预约' and studentName='"+reserveCourse.getStudentName()+"' and courseTableID="+reserveCourse.getCourseTableID();
+			sql = "select * from reserveCourse where phone='"+reserveCourse.getPhone()+"' and status in ('已预约','上课中') and studentName='"+reserveCourse.getStudentName()+"' and courseTableID="+reserveCourse.getCourseTableID();
 		}else if("repeatTimeReserve".equals(flag)){
-			sql = "select * from reserveCourse where phone='"+reserveCourse.getPhone()+"' and status = '已预约' and studentName='"+reserveCourse.getStudentName()+"' and date='"+reserveCourse.getDate()+"'";
+			sql = "select * from reserveCourse where phone='"+reserveCourse.getPhone()+"' and status in ('已预约','上课中') and studentName='"+reserveCourse.getStudentName()+"' and date='"+reserveCourse.getDate()+"'";
 		}else if("confirmCourse".equals(flag)){
 			sql = "select * from reserveCourse where phone='"+reserveCourse.getPhone()+"' and status = '未确认' and studentName='"+reserveCourse.getStudentName()+"' and courseTableID="+reserveCourse.getCourseTableID();
 		}else if("myConfirmCourses".equals(flag)){
