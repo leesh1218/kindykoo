@@ -1302,7 +1302,16 @@ public class ReserveCourseController extends Controller {
 //				return false;
 //			}
 		
+		
 		CourseTable courseTable = courseTableService.getCourseTable(id);
+		
+		// 控制不允许预约之前阶段的课程
+		if(courseTable.getWeekCount() < minReserveWeekCount) {
+			setAttr("isOK", false);
+			setAttr("infoMsg", "不允许约之前阶段的课程！");
+			renderJson();
+			return false;
+		}
 		
 		// 控制本阶段所有课程未全部确认完成，不允许约下一阶段的课程 2021-05-16 17:09:03
 		if(courseTable.getWeekCount() > maxReserveWeekCount) {

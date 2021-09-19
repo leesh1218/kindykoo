@@ -19,7 +19,7 @@ public class UpdateCourseStatusEnd implements Runnable {
 		String info = "UpdateCourseStatusEnd";
 		String sql1 = "update reserveCourse set STATUS='未确认' where date<=date_sub(now(), interval 45 minute) and STATUS='上课中'";
 		int count1 = reserveCourseService.UpdateReserveCourseStatus(sql1);
-		String sql2 = "update courseTable set STATUS='未确认' where date<=date_sub(now(), interval 45 minute) and STATUS='上课中'";
+		String sql2 = "update courseTable set STATUS='未确认',allowFixed=0,enable=0 where date<=date_sub(now(), interval 45 minute) and STATUS='上课中'";
 		int count2 = courseTableService.UpdateCourseTableStatus(sql2);
 		System.out.println(info+" count1="+count1+" count2="+count2);
 		if(count1 > 0 || count2 > 0){
